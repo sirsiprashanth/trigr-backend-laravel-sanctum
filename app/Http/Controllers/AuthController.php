@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -13,17 +14,33 @@ class AuthController extends Controller
         $fields = $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed'
+            'password' => 'required|confirmed',
+            'role' => 'required|max:20',
         ]);
 
-        $user = User::create($fields);
+        try {
+            $user = User::create([
+                'name' => $fields['name'],
+                'email' => $fields['email'],
+                'password' => Hash::make($fields['password']),
+                'role' => $fields['role'],
+            ]);
 
-        $token = $user->createToken($request->name);
+            $token = $user->createToken($user->name);
 
-        return [
-            'user' => $user,
-            'token' => $token->plainTextToken
-        ];
+            return response()->json([
+                'user' => $user,
+                'token' => $token->plainTextToken
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Registration failed. Please try again.'
+            ], 500);
+        }
     }
 
     public function login(Request $request)
@@ -59,7 +76,7 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return [
-            'message' => 'You are logged out.' 
+            'message' => 'You are logged out.'
         ];
     }
 }
