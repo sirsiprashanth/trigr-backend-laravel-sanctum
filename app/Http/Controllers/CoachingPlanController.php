@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoachingPlan;
+use App\Models\CoachingPlanTarget;
 use Illuminate\Http\Request;
 
 class CoachingPlanController extends Controller
 {
     public function index()
     {
-        return CoachingPlan::all();
+        return CoachingPlan::with('targets')->get();
     }
 
     public function store(Request $request)
@@ -24,26 +25,32 @@ class CoachingPlanController extends Controller
             'status' => 'required|in:pending,in progress,completed,cancelled',
             'coach_id' => 'required|exists:users,id',
             'user_id' => 'required|exists:users,id',
-            'focus_area_id' => 'nullable|exists:focus_areas,id',
-            'goal_id' => 'nullable|exists:goals,id',
-            'strategy_id' => 'nullable|exists:strategies,id',
-            'action_plan_id' => 'nullable|exists:action_plans,id',
+            'targets' => 'nullable|array',
+            'targets.*.focus_area_id' => 'nullable|exists:focus_areas,id',
+            'targets.*.goal_id' => 'nullable|exists:goals,id',
+            'targets.*.strategy_id' => 'nullable|exists:strategies,id',
+            'targets.*.action_plan_id' => 'nullable|exists:action_plans,id',
         ]);
 
         $coachingPlan = CoachingPlan::create($validatedData);
 
-        return response()->json($coachingPlan, 201);
+        if (isset($validatedData['targets'])) {
+            foreach ($validatedData['targets'] as $target) {
+                $target['coaching_plan_id'] = $coachingPlan->id;
+                CoachingPlanTarget::create($target);
+            }
+        }
+
+        return response()->json($coachingPlan->load('targets'), 201);
     }
 
     public function show($id)
     {
-        return CoachingPlan::findOrFail($id);
+        return CoachingPlan::with('targets')->findOrFail($id);
     }
 
     public function update(Request $request, $id)
     {
-        $coachingPlan = CoachingPlan::findOrFail($id);
-
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
@@ -52,17 +59,60 @@ class CoachingPlanController extends Controller
             'contract_terms' => 'sometimes|required|string',
             'price' => 'sometimes|required|numeric',
             'status' => 'sometimes|required|in:pending,in progress,completed,cancelled',
-            'coach_id' => 'sometimes|required|exists:coaches,id',
+            'coach_id' => 'sometimes|required|exists:users,id',
             'user_id' => 'sometimes|required|exists:users,id',
-            'focus_area_id' => 'nullable|exists:focus_areas,id',
-            'goal_id' => 'nullable|exists:goals,id',
-            'strategy_id' => 'nullable|exists:strategies,id',
-            'action_plan_id' => 'nullable|exists:action_plans,id',
+            'targets' => 'nullable|array',
+            'targets.*.id' => 'nullable|exists:coaching_plan_targets,id',
+            'targets.*.focus_area_id' => 'nullable|exists:focus_areas,id',
+            'targets.*.goal_id' => 'nullable|exists:goals,id',
+            'targets.*.strategy_id' => 'nullable|array', // Validate as array
+            'targets.*.action_plan_id' => 'nullable|exists:action_plans,id',
         ]);
 
+        $coachingPlan = CoachingPlan::findOrFail($id);
         $coachingPlan->update($validatedData);
 
-        return response()->json($coachingPlan, 200);
+        if (isset($validatedData['targets'])) {
+            foreach ($validatedData['targets'] as $target) {
+                if (isset($target['id'])) {
+                    $coachingPlanTarget = CoachingPlanTarget::findOrFail($target['id']);
+                    if (isset($target['strategy_id']) && is_array($target['strategy_id'])) {
+                        // Delete the existing target if strategy_id is an array
+                        $coachingPlanTarget->delete();
+                        // Create multiple records with the same focus_area_id and goal_id
+                        foreach ($target['strategy_id'] as $strategyId) {
+                            CoachingPlanTarget::create([
+                                'coaching_plan_id' => $coachingPlan->id,
+                                'focus_area_id' => $coachingPlanTarget->focus_area_id,
+                                'goal_id' => $coachingPlanTarget->goal_id,
+                                'strategy_id' => $strategyId,
+                                'action_plan_id' => $target['action_plan_id'] ?? null,
+                            ]);
+                        }
+                    } else {
+                        $coachingPlanTarget->update($target);
+                    }
+                } else {
+                    if (isset($target['strategy_id']) && is_array($target['strategy_id'])) {
+                        // Create multiple records with the same focus_area_id and goal_id
+                        foreach ($target['strategy_id'] as $strategyId) {
+                            CoachingPlanTarget::create([
+                                'coaching_plan_id' => $coachingPlan->id,
+                                'focus_area_id' => $target['focus_area_id'],
+                                'goal_id' => $target['goal_id'],
+                                'strategy_id' => $strategyId,
+                                'action_plan_id' => $target['action_plan_id'] ?? null,
+                            ]);
+                        }
+                    } else {
+                        $target['coaching_plan_id'] = $coachingPlan->id;
+                        CoachingPlanTarget::create($target);
+                    }
+                }
+            }
+        }
+
+        return response()->json($coachingPlan->load('targets'));
     }
 
     public function destroy($id)

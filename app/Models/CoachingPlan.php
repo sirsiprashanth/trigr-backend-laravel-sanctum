@@ -19,10 +19,6 @@ class CoachingPlan extends Model
         'status',
         'coach_id',
         'user_id',
-        'focus_area_id',
-        'goal_id',
-        'strategy_id',
-        'action_plan_id',
     ];
 
     public function coach()
@@ -35,23 +31,8 @@ class CoachingPlan extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function focusArea()
+    public function targets()
     {
-        return $this->belongsTo(FocusArea::class, 'focus_area_id');
-    }
-
-    public function goal()
-    {
-        return $this->belongsTo(Goal::class, 'goal_id');
-    }
-
-    public function strategy()
-    {
-        return $this->belongsTo(Strategy::class, 'strategy_id');
-    }
-
-    public function actionPlan()
-    {
-        return $this->belongsTo(ActionPlan::class, 'action_plan_id');
+        return $this->hasMany(CoachingPlanTarget::class);
     }
 }

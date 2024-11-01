@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActionPlan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ActionPlanController extends Controller
 {
@@ -20,8 +21,27 @@ class ActionPlanController extends Controller
      */
     public function store(Request $request)
     {
-        $actionPlan = ActionPlan::create($request->all());
-        return response()->json($actionPlan, 201);
+        Log::info('Request data:', $request->all());
+
+        $validatedData = $request->validate([
+            'actionPlans' => 'required|array',
+            'actionPlans.*.days_of_week' => 'nullable|array',
+            'actionPlans.*.days_of_week.*' => 'nullable|string',
+            'actionPlans.*.description' => 'required|string',
+            'actionPlans.*.frequency' => 'nullable|string',
+            'actionPlans.*.name' => 'required|string|max:255',
+            'actionPlans.*.specific_datetime' => 'nullable|string',
+        ]);
+
+        $actionPlans = [];
+
+        foreach ($validatedData['actionPlans'] as $data) {
+            $data['days_of_week'] = json_encode($data['days_of_week']); // Encode days_of_week as JSON
+            $actionPlan = ActionPlan::create($data);
+            $actionPlans[] = $actionPlan;
+        }
+
+        return response()->json($actionPlans, 201);
     }
 
     /**

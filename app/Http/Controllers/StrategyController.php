@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Strategy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StrategyController extends Controller
 {
@@ -20,8 +21,20 @@ class StrategyController extends Controller
      */
     public function store(Request $request)
     {
-        $strategy = Strategy::create($request->all());
-        return response()->json($strategy, 201);
+        Log::info('Incoming request data:', $request->all());
+
+        $validatedData = $request->validate([
+            'names' => 'required|array',
+            'names.*' => 'required|string|max:255',
+        ]);
+
+        $strategies = [];
+        foreach ($validatedData['names'] as $name) {
+            $strategyData = ['name' => $name];
+            $strategies[] = Strategy::create($strategyData);
+        }
+
+        return response()->json($strategies, 201);
     }
 
     /**
