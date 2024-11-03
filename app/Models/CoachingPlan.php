@@ -4,35 +4,45 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CoachingPlan extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name',
+        'user_id',
+        'coach_id',
+        'title',
         'description',
-        'start_date',
-        'end_date',
         'contract_terms',
         'price',
-        'status',
-        'coach_id',
-        'user_id',
+        'start_date',
+        'end_date',
+        'status'
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'price' => 'decimal:2'
+    ];
+
+    // Relationship with User (the client)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relationship with Coach
     public function coach()
     {
         return $this->belongsTo(User::class, 'coach_id');
     }
 
-    public function user()
+    // Relationship with Goals
+    public function goals()
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function targets()
-    {
-        return $this->hasMany(CoachingPlanTarget::class);
+        return $this->hasMany(Goal::class);
     }
 }

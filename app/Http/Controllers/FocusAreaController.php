@@ -4,58 +4,123 @@ namespace App\Http\Controllers;
 
 use App\Models\FocusArea;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class FocusAreaController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get all focus areas, with option to filter predefined ones
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(FocusArea::all());
+        $query = FocusArea::query();
+
+        // Filter by type if specified
+        if ($request->has('type')) {
+            if ($request->type === 'predefined') {
+                $query->predefined();
+            } elseif ($request->type === 'custom') {
+                $query->custom();
+            }
+        }
+
+        $focusAreas = $query->orderBy('name')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $focusAreas
+        ]);
     }
 
     /**
-     * Display a listing of the prepopulated focus areas.
+     * Store a new focus area
      */
-    public function prepopulatedFocusAreas()
+    public function store(Request $request): JsonResponse
     {
-        $focusAreas = FocusArea::where('is_user_created', false)->get();
-        return response()->json($focusAreas);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:focus_areas,name',
+            'description' => 'nullable|string',
+            'is_predefined' => 'boolean'
+        ]);
+
+        // Default to custom focus area if not specified
+        if (!isset($validated['is_predefined'])) {
+            $validated['is_predefined'] = false;
+        }
+
+        $focusArea = FocusArea::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Focus area created successfully',
+            'data' => $focusArea
+        ], 201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Get a specific focus area
      */
-    public function store(Request $request)
+    public function show(FocusArea $focusArea): JsonResponse
     {
-        $focusArea = FocusArea::create($request->all());
-        return response()->json($focusArea, 201);
+        return response()->json([
+            'success' => true,
+            'data' => $focusArea->load('goals')
+        ]);
     }
 
     /**
-     * Display the specified resource.
+     * Update a focus area
      */
-    public function show(FocusArea $focusArea)
+    public function update(Request $request, FocusArea $focusArea): JsonResponse
     {
-        return response()->json($focusArea);
+        // Only allow updating custom focus areas
+        if ($focusArea->is_predefined) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Predefined focus areas cannot be modified'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255|unique:focus_areas,name,' . $focusArea->id,
+            'description' => 'nullable|string'
+        ]);
+
+        $focusArea->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Focus area updated successfully',
+            'data' => $focusArea
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Delete a focus area
      */
-    public function update(Request $request, FocusArea $focusArea)
+    public function destroy(FocusArea $focusArea): JsonResponse
     {
-        $focusArea->update($request->all());
-        return response()->json($focusArea);
-    }
+        // Only allow deleting custom focus areas
+        if ($focusArea->is_predefined) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Predefined focus areas cannot be deleted'
+            ], 403);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(FocusArea $focusArea)
-    {
+        // Check if focus area is being used in any goals
+        if ($focusArea->goals()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Focus area is in use and cannot be deleted'
+            ], 422);
+        }
+
         $focusArea->delete();
-        return response()->json(null, 204);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Focus area deleted successfully'
+        ]);
     }
 }

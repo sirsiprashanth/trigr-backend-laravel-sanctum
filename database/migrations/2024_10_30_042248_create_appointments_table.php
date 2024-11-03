@@ -21,12 +21,10 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by_user_id')->nullable();
             $table->unsignedBigInteger('created_for_user_id')->nullable();
             $table->enum('status', ['scheduled', 'pending', 'confirmed', 'cancelled', 'completed', 'no show', 'rescheduled'])->nullable();
-            $table->unsignedBigInteger('coaching_plan_id')->nullable();
             $table->timestamps();
 
             $table->foreign('created_by_user_id')->references('id')->on('users');
             $table->foreign('created_for_user_id')->references('id')->on('users');
-            $table->foreign('coaching_plan_id')->references('id')->on('coaching_plans');
         });
     }
 

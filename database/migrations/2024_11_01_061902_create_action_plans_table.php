@@ -13,12 +13,19 @@ return new class extends Migration
     {
         Schema::create('action_plans', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('specific_datetime')->nullable();
-            $table->enum('frequency', ['daily'])->nullable();
-            $table->json('days_of_week')->nullable(); // Store days of the week as JSON array
-            $table->string('name');
+            $table->unsignedBigInteger('goal_id')->nullable();
+            $table->string('title');
             $table->text('description')->nullable();
+            $table->date('due_date')->nullable();
+            $table->enum('status', ['not_started', 'in_progress', 'completed'])->default('not_started');
+            $table->integer('sequence')->default(1); // To maintain order of action plans
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreign('goal_id')
+                ->references('id')
+                ->on('goals')
+                ->onDelete('set null');
         });
     }
 

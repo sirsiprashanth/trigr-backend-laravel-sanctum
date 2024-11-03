@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('strategies', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->unsignedBigInteger('goal_id')->nullable();
+            $table->string('title');
             $table->text('description')->nullable();
+            $table->integer('sequence')->default(1); // To maintain order of strategies
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreign('goal_id')
+                ->references('id')
+                ->on('goals')
+                ->onDelete('set null');
         });
     }
 

@@ -24,7 +24,7 @@ Route::get('/get-coaches', [UserController::class, 'getCoaches'])->middleware('a
 
 Route::apiResource('users', UserController::class);
 
-Route::apiResource('coaching-plans', CoachingPlanController::class);
+Route::apiResource('coaching-plans', CoachingPlanController::class)->middleware('auth:sanctum');
 
 Route::apiResource('coaching-requests', CoachingRequestController::class);
 
@@ -41,5 +41,8 @@ Route::get('/prepopulated-focus-areas', [FocusAreaController::class, 'prepopulat
 Route::apiResource('goals', GoalController::class);
 
 Route::apiResource('strategies', StrategyController::class);
+Route::post('strategies/reorder', [StrategyController::class, 'reorder']);
 
 Route::apiResource('action-plans', ActionPlanController::class);
+Route::post('action-plans/reorder', [ActionPlanController::class, 'reorder']);
+Route::patch('action-plans/{actionPlan}/status', [ActionPlanController::class, 'updateStatus']);
