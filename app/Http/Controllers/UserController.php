@@ -86,6 +86,13 @@ class UserController extends Controller
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'sometimes|required|string|min:8',
             'role' => 'sometimes|required|string|in:user,coach,admin', // Assuming roles are user, coach, admin
+            'experience_years' => 'sometimes|required|integer|min:0',
+            'brief_bio' => 'sometimes|required|string|max:1000',
+            'clients_coached' => 'sometimes|required|integer|min:0',
+            'rating' => 'sometimes|required|numeric|min:0|max:5',
+            'client_reviews' => 'sometimes|required|json',
+            'photo' => 'sometimes|required|string|max:255',
+            'additional_info' => 'sometimes|required|string|max:1000',
         ]);
 
         if (isset($validatedData['password'])) {
