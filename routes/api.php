@@ -11,6 +11,7 @@ use App\Http\Controllers\FocusAreaController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\ActionPlanController;
+use App\Http\Controllers\HealthConnectController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -46,3 +47,5 @@ Route::post('strategies/reorder', [StrategyController::class, 'reorder']);
 Route::apiResource('action-plans', ActionPlanController::class);
 Route::post('action-plans/reorder', [ActionPlanController::class, 'reorder']);
 Route::patch('action-plans/{actionPlan}/status', [ActionPlanController::class, 'updateStatus']);
+// New route for receiving data from Google Health Connect
+Route::post('/health-connect', [HealthConnectController::class, 'store']);
