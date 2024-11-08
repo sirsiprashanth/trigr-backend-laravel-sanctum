@@ -12,6 +12,7 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\ActionPlanController;
 use App\Http\Controllers\HealthConnectController;
+use App\Http\Controllers\Api\TerraController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -49,3 +50,4 @@ Route::post('action-plans/reorder', [ActionPlanController::class, 'reorder']);
 Route::patch('action-plans/{actionPlan}/status', [ActionPlanController::class, 'updateStatus']);
 // New route for receiving data from Google Health Connect
 Route::post('/health-connect', [HealthConnectController::class, 'store']);
+Route::post('/terra/generate-token', [TerraController::class, 'generateToken']);
