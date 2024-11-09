@@ -51,3 +51,4 @@ Route::patch('action-plans/{actionPlan}/status', [ActionPlanController::class, '
 // New route for receiving data from Google Health Connect
 Route::post('/health-connect', [HealthConnectController::class, 'store']);
 Route::post('/terra/generate-token', [TerraController::class, 'generateToken']);
+Route::get('/health-connect/daily/{user_id}', [HealthConnectController::class, 'getDailyData']);

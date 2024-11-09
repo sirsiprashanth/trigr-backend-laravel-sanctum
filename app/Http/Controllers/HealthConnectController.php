@@ -46,4 +46,25 @@ class HealthConnectController extends Controller
 
         return response()->json(['message' => 'Data received and logged successfully'], 200);
     }
+
+    /**
+     * Get daily data by user_id.
+     *
+     * @param  string  $user_id
+     * @return \Illuminate\Http\Response
+     */
+    public function getDailyData($user_id)
+    {
+        // Log the received user_id
+        $dateTimeIndia = now()->setTimezone('Asia/Kolkata')->toDateTimeString();
+        Log::info('[' . $dateTimeIndia . '] Received request for user_id: ' . $user_id);
+        // Fetch daily data for the specified user_id
+        $dailyData = GetDaily::where('reference_id', $user_id)->get();
+
+        if ($dailyData->isEmpty()) {
+            return response()->json(['message' => 'No data found for the specified user_id'], 404);
+        }
+
+        return response()->json($dailyData, 200);
+    }
 }
