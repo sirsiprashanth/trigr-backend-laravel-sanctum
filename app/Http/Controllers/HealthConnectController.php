@@ -23,11 +23,11 @@ class HealthConnectController extends Controller
         $data = $request->input('data');
         $user = $request->input('user');
 
-        // Use updateOrCreate to check if user_id exists and update or create a new record
+        // Use updateOrCreate to check if reference_id exists and update or create a new record
         $getDaily = GetDaily::updateOrCreate(
-            ['reference_id' => $user['reference_id']], // Condition to check if user_id exists
+            ['reference_id' => $user['reference_id']], // Condition to check if reference_id exists
             [
-                'reference_id' => $user['reference_id'],
+                'user_id' => $user['user_id'],
                 'distance_in_meters' => $data['distance_in_meters'] ?? null,
                 'swimming_strokes' => $data['swimming_strokes'] ?? null,
                 'steps' => $data['steps'] ?? null,
