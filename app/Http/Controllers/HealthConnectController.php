@@ -25,7 +25,7 @@ class HealthConnectController extends Controller
 
         // Use updateOrCreate to check if user_id exists and update or create a new record
         $getDaily = GetDaily::updateOrCreate(
-            ['user_id' => $user['user_id']], // Condition to check if user_id exists
+            ['reference_id' => $user['reference_id']], // Condition to check if user_id exists
             [
                 'reference_id' => $user['reference_id'],
                 'distance_in_meters' => $data['distance_in_meters'] ?? null,
