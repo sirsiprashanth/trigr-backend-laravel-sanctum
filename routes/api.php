@@ -13,6 +13,7 @@ use App\Http\Controllers\StrategyController;
 use App\Http\Controllers\ActionPlanController;
 use App\Http\Controllers\HealthConnectController;
 use App\Http\Controllers\Api\TerraController;
+use App\Http\Controllers\NoteController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -49,7 +50,15 @@ Route::post('strategies/reorder', [StrategyController::class, 'reorder']);
 Route::apiResource('action-plans', ActionPlanController::class);
 Route::post('action-plans/reorder', [ActionPlanController::class, 'reorder']);
 Route::patch('action-plans/{actionPlan}/status', [ActionPlanController::class, 'updateStatus']);
+Route::get('action-plans/user/{user_id}', [ActionPlanController::class, 'getUserActionPlans']);
+Route::get('/action-plans/user/{user_id}', [ActionPlanController::class, 'getUserActionPlans'])
+    ->name('action-plans.user');
 // New route for receiving data from Google Health Connect
 Route::post('/health-connect', [HealthConnectController::class, 'store']);
 Route::post('/terra/generate-token', [TerraController::class, 'generateToken']);
 Route::get('/health-connect/daily/{user_id}', [HealthConnectController::class, 'getDailyData']);
+
+Route::get('coaching-plans/{coaching_plan_id}/notes', [NoteController::class, 'index'])
+    ->where('coaching_plan_id', '[0-9]+'); // Ensure coaching_plan_id is numeric
+Route::post('notes', [NoteController::class, 'store']);
+Route::delete('notes/{note}', [NoteController::class, 'destroy']);

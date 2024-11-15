@@ -7,6 +7,8 @@ use App\Models\Goal;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ActionPlanController extends Controller
 {
@@ -234,5 +236,108 @@ class ActionPlanController extends Controller
         // $coachingPlan = $goal->coachingPlan;
         // return Auth::id() === $coachingPlan->user_id || Auth::id() === $coachingPlan->coach_id;
         return true;
+    }
+
+    public function getUserActionPlans(Request $request, $user_id): JsonResponse
+    {
+        Log::info('getUserActionPlans called', [
+            'user_id' => $user_id,
+            'request' => $request->all()
+        ]);
+
+        try {
+            // Validate the user ID
+            $validator = Validator::make(['user_id' => $user_id], [
+                'user_id' => 'required|exists:users,id'
+            ]);
+
+            if ($validator->fails()) {
+                Log::error('Validation failed', [
+                    'errors' => $validator->errors()->toArray()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid user ID',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get all action plans where the user is either the client or coach
+            $actionPlans = ActionPlan::with(['goal.coachingPlan'])
+                ->whereHas('goal.coachingPlan', function ($query) use ($user_id) {
+                    $query->where(function ($q) use ($user_id) {
+                        $q->where('user_id', $user_id)
+                            ->orWhere('coach_id', $user_id);
+                    });
+                })
+                ->get();
+
+            Log::info('Action plans fetched', [
+                'count' => $actionPlans->count(),
+                'user_id' => $user_id
+            ]);
+
+            // Group action plans by status
+            $notStarted = $actionPlans->where('status', ActionPlan::STATUS_NOT_STARTED);
+            $inProgress = $actionPlans->where('status', ActionPlan::STATUS_IN_PROGRESS);
+            $completed = $actionPlans->where('status', ActionPlan::STATUS_COMPLETED);
+
+            // Calculate summary
+            $summary = [
+                'total_count' => $actionPlans->count(),
+                'not_started_count' => $notStarted->count(),
+                'in_progress_count' => $inProgress->count(),
+                'completed_count' => $completed->count(),
+                'overdue_count' => $actionPlans
+                    ->where('status', '!=', ActionPlan::STATUS_COMPLETED)
+                    ->where('due_date', '<', now())
+                    ->count(),
+            ];
+
+            // Transform the data to include goal and coaching plan information
+            $transformActionPlans = function ($plans) {
+                return $plans->map(function ($plan) {
+                    return [
+                        'id' => $plan->id,
+                        'title' => $plan->title,
+                        'description' => $plan->description,
+                        'due_date' => $plan->due_date ? $plan->due_date->format('Y-m-d') : null,
+                        'status' => $plan->status,
+                        'sequence' => $plan->sequence,
+                        'goal' => $plan->goal ? [
+                            'id' => $plan->goal->id,
+                            'title' => $plan->goal->title,
+                            'coaching_plan' => $plan->goal->coachingPlan ? [
+                                'id' => $plan->goal->coachingPlan->id,
+                                'title' => $plan->goal->coachingPlan->title
+                            ] : null
+                        ] : null
+                    ];
+                })->values();
+            };
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'action_plans' => [
+                        'not_started' => $transformActionPlans($notStarted),
+                        'in_progress' => $transformActionPlans($inProgress),
+                        'completed' => $transformActionPlans($completed),
+                    ],
+                    'summary' => $summary,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching action plans', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user_id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching action plans: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
