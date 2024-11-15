@@ -74,10 +74,15 @@ class ActionPlanController extends Controller
 
         $actionPlan = ActionPlan::create($validated);
 
+        // Get the count of goals in the coaching plan
+        $goalCount = Goal::where('coaching_plan_id', $goal->coaching_plan_id)->count();
+
         return response()->json([
             'success' => true,
             'message' => 'Action plan created successfully',
-            'data' => $actionPlan
+            'data' => $actionPlan,
+            'goal_count' => $goalCount, // Total number of goals in the coaching plan
+            'coaching_plan_id' => $goal->coaching_plan_id
         ], 201);
     }
 

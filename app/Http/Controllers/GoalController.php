@@ -181,4 +181,37 @@ class GoalController extends Controller
         // return Auth::id() === $plan->user_id || Auth::id() === $plan->coach_id;
         return true;
     }
+
+    /**
+     * Get the number of goals for a specific coaching plan
+     *
+     * @param Request $request
+     * @param int $coaching_plan_id
+     * @return JsonResponse
+     */
+    public function getGoalsCount(Request $request, $coaching_plan_id): JsonResponse
+    {
+        // // Find the coaching plan
+        // $coachingPlan = CoachingPlan::findOrFail($coaching_plan_id);
+
+        // // Check access
+        // if (!$this->userHasAccess($coachingPlan)) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Unauthorized access'
+        //     ], 403);
+        // }
+
+        // Get the count of goals
+        $goalsCount = Goal::where('coaching_plan_id', $coaching_plan_id)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'coaching_plan_id' => $coaching_plan_id,
+                'goals_count' => $goalsCount,
+                'max_goals' => 3
+            ]
+        ]);
+    }
 }

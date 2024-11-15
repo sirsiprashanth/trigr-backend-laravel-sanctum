@@ -41,6 +41,7 @@ Route::apiResource('focus-areas', FocusAreaController::class);
 Route::get('/prepopulated-focus-areas', [FocusAreaController::class, 'prepopulatedFocusAreas']);
 
 Route::apiResource('goals', GoalController::class);
+Route::get('/coaching-plans/{coaching_plan_id}/goals-count', [GoalController::class, 'getGoalsCount']);
 
 Route::apiResource('strategies', StrategyController::class);
 Route::post('strategies/reorder', [StrategyController::class, 'reorder']);
