@@ -14,6 +14,7 @@ use App\Http\Controllers\ActionPlanController;
 use App\Http\Controllers\HealthConnectController;
 use App\Http\Controllers\Api\TerraController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\SupportController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -62,3 +63,4 @@ Route::get('coaching-plans/{coaching_plan_id}/notes', [NoteController::class, 'i
     ->where('coaching_plan_id', '[0-9]+'); // Ensure coaching_plan_id is numeric
 Route::post('notes', [NoteController::class, 'store']);
 Route::delete('notes/{note}', [NoteController::class, 'destroy']);
+Route::post('support', [SupportController::class, 'store']);
