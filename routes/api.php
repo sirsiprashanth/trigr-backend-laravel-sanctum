@@ -15,6 +15,7 @@ use App\Http\Controllers\HealthConnectController;
 use App\Http\Controllers\Api\TerraController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\VitalScanController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -64,3 +65,8 @@ Route::get('coaching-plans/{coaching_plan_id}/notes', [NoteController::class, 'i
 Route::post('notes', [NoteController::class, 'store']);
 Route::delete('notes/{note}', [NoteController::class, 'destroy']);
 Route::post('support', [SupportController::class, 'store']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/vitals', [VitalScanController::class, 'store']);
+    Route::get('/vitals/history', [VitalScanController::class, 'history']);
+});
