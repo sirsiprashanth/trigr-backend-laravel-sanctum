@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\TerraController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\VitalScanController;
+use App\Http\Controllers\EplimoReportController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -69,4 +70,11 @@ Route::post('support', [SupportController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vitals', [VitalScanController::class, 'store']);
     Route::get('/vitals/history', [VitalScanController::class, 'history']);
+});
+
+// Eplimo Report Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/eplimo-report', [EplimoReportController::class, 'store']);
+    Route::get('/eplimo-report', [EplimoReportController::class, 'show']);
+    Route::get('/eplimo-report/download', [EplimoReportController::class, 'downloadPdf']);
 });
