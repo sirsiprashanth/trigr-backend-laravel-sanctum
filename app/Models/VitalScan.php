@@ -14,6 +14,7 @@ class VitalScan extends Model
         'pulse_rate',
         'mean_rri',
         'oxygen_saturation',
+        'spo2',
         'respiration_rate',
         'stress_level',
         'sdnn',
@@ -30,5 +31,9 @@ class VitalScan extends Model
         'sns_zone',
         'wellness_index',
         'wellness_level',
+    ];
+
+    protected $casts = [
+        'blood_pressure' => 'array'
     ];
 }
