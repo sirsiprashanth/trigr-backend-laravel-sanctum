@@ -17,6 +17,9 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\VitalScanController;
 use App\Http\Controllers\EplimoReportController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DubaiEventController;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -77,4 +80,81 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/eplimo-report', [EplimoReportController::class, 'store']);
     Route::get('/eplimo-report', [EplimoReportController::class, 'show']);
     Route::get('/eplimo-report/download', [EplimoReportController::class, 'downloadPdf']);
+});
+
+// Notification Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/notifications', [NotificationController::class, 'store']);
+    Route::patch('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+});
+
+// Dubai Event Routes
+Route::post('/dubai-event-facescans', [DubaiEventController::class, 'logFaceScan']);
+Route::post('/dubai-event-facescans/update', [DubaiEventController::class, 'logUpdate']);
+
+Route::get('/test-mail', function () {
+    try {
+        $config = config('mail');
+        $testData = [
+            'driver' => $config['default'],
+            'host' => $config['mailers']['smtp']['host'],
+            'port' => $config['mailers']['smtp']['port'],
+            'encryption' => $config['mailers']['smtp']['encryption'],
+            'username' => $config['mailers']['smtp']['username'],
+            'from_address' => $config['from']['address'],
+            'from_name' => $config['from']['name'],
+        ];
+        
+        Mail::raw('Test email from Laravel', function($message) {
+            $message->to('prashanthsirsi@gmail.com')
+                   ->subject('Test Email');
+        });
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Mail sent successfully',
+            'config' => $testData
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+            'config' => $testData ?? null,
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
+Route::get('/test-face-scan-mail', function () {
+    try {
+        $sampleData = [
+            'pulse_rate' => 72,
+            'spo2' => 98,
+            'blood_pressure' => [
+                'systolic' => 120,
+                'diastolic' => 80
+            ],
+            'respiration_rate' => 16,
+            'stress_level' => 45,
+            'sdnn' => 45,
+            'lfhf' => 1.5,
+            'wellness_index' => 85
+        ];
+        
+        Mail::to('prashanthsirsi@gmail.com')->send(new \App\Mail\VitalScanResults($sampleData));
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Face scan report email sent successfully'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
 });
