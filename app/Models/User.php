@@ -28,7 +28,8 @@ class User extends Authenticatable
         'rating',
         'client_reviews',
         'photo',
-        'additional_info'
+        'additional_info',
+        'ai_chat_user_id'
     ];
 
     /**
