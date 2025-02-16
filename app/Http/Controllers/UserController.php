@@ -79,29 +79,55 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        try {
+            $user = User::findOrFail($id);
 
-        $validatedData = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|required|string|min:8',
-            'role' => 'sometimes|required|string|in:user,coach,admin', // Assuming roles are user, coach, admin
-            'experience_years' => 'sometimes|required|integer|min:0',
-            'brief_bio' => 'sometimes|required|string|max:1000',
-            'clients_coached' => 'sometimes|required|integer|min:0',
-            'rating' => 'sometimes|required|numeric|min:0|max:5',
-            'client_reviews' => 'sometimes|required|json',
-            'photo' => 'sometimes|required|string|max:255',
-            'additional_info' => 'sometimes|required|string|max:1000',
-        ]);
+            $validatedData = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
+                'password' => 'sometimes|required|string|min:8',
+                'role' => 'sometimes|required|string|in:user,coach,admin', // Assuming roles are user, coach, admin
+                'experience_years' => 'sometimes|required|integer|min:0',
+                'brief_bio' => 'sometimes|required|string|max:1000',
+                'clients_coached' => 'sometimes|required|integer|min:0',
+                'rating' => 'sometimes|required|numeric|min:0|max:5',
+                'client_reviews' => 'sometimes|required|json',
+                'photo' => 'sometimes|required|string|max:255',
+                'additional_info' => 'sometimes|required|string|max:1000',
+                'ai_chat_user_id' => 'sometimes|nullable'
+            ]);
 
-        if (isset($validatedData['password'])) {
-            $validatedData['password'] = bcrypt($validatedData['password']);
+            // Convert ai_chat_user_id to string if it exists
+            if (isset($validatedData['ai_chat_user_id'])) {
+                $validatedData['ai_chat_user_id'] = (string) $validatedData['ai_chat_user_id'];
+            }
+
+            if (isset($validatedData['password'])) {
+                $validatedData['password'] = bcrypt($validatedData['password']);
+            }
+
+            $user->update($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'data' => $user
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating user: ' . $e->getMessage()
+            ], 500);
         }
-
-        $user->update($validatedData);
-
-        return response()->json($user);
     }
 
     /**
