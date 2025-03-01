@@ -15,6 +15,9 @@
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
         @inertiaHead
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap');
+        </style>
     </head>
     <body class="font-sans antialiased">
         @inertia

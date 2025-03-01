@@ -1,26 +1,37 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+import LeftSidebar from '@/Components/Dashboard/LeftSidebar';
+import MainContent from '@/Components/Dashboard/MainContent';
+import Messages from '@/Components/Dashboard/Messages';
+import Schedules from '@/Components/Dashboard/Schedules';
+import RightSidebar from '@/Components/Dashboard/RightSidebar';
 
-export default function Dashboard() {
+export default function Dashboard({ auth }) {
+    const [currentView, setCurrentView] = useState('dashboard');
+
+    const handleNavigation = (view) => {
+        setCurrentView(view);
+    };
+
+    const renderMainContent = () => {
+        switch (currentView) {
+            case 'dashboard':
+                return <MainContent currentUserId={auth.user.id} onNavigate={handleNavigation} />;
+            case 'messages':
+                return <Messages currentUserId={auth.user.id} />;
+            case 'schedules':
+                return <Schedules currentUserId={auth.user.id} />;
+            default:
+                return <MainContent currentUserId={auth.user.id} onNavigate={handleNavigation} />;
+        }
+    };
+
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
-                </h2>
-            }
-        >
+        <div className="flex min-h-screen bg-[#1A1D1F] text-white">
             <Head title="Dashboard" />
-
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
+            <LeftSidebar onNavigate={handleNavigation} currentView={currentView} />
+            {renderMainContent()}
+            <RightSidebar user={auth.user} />
+        </div>
     );
 }
