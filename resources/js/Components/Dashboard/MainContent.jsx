@@ -4,7 +4,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export default function MainContent({ currentUserId, onNavigate }) {
     const [tasks, setTasks] = useState([
-        { id: 1, title: 'NEW USER', count: '99+', subtitle: 'Users Inbound', icon: '👤', bgColor: 'bg-[#85C240]' },
+        { id: 1, title: 'NEW USER', count: 0, subtitle: 'Users Inbound', icon: '👤', bgColor: 'bg-[#85C240]', onClick: () => onNavigate('new-user') },
         { id: 2, title: 'CLIENTS', count: '99+', subtitle: 'Clients Available', icon: '👥', bgColor: 'bg-[#9747FF]' },
         { id: 3, title: 'MESSAGES', count: 0, subtitle: 'Messages', icon: '💬', bgColor: 'bg-[#FF7A50]', onClick: () => onNavigate('messages') },
         { id: 4, title: 'SCHEDULE', count: '99+', subtitle: 'Upcoming Tasks', icon: '📅', bgColor: 'bg-[#50B5FF]' },
@@ -84,7 +84,48 @@ export default function MainContent({ currentUserId, onNavigate }) {
             });
         });
 
-        return () => unsubscribe();
+        // Query for pending discovery calls
+        const discoveryCallsCollection = collection(db, "discoveryCallRequest");
+        const pendingCallsQuery = query(
+            discoveryCallsCollection,
+            where("coachId", "==", Number(currentUserId)),
+            where("status", "==", "pending")
+        );
+
+        const unsubscribe2 = onSnapshot(pendingCallsQuery, (snapshot) => {
+            const pendingCount = snapshot.docs.length;
+            
+            // Update the NEW USER task card
+            setTasks(prevTasks => 
+                prevTasks.map(task => 
+                    task.title === 'NEW USER' 
+                        ? { ...task, count: pendingCount } 
+                        : task
+                )
+            );
+
+            // Update the first upcoming task if there are pending calls
+            setUpcomingTasks(prevTasks => {
+                const updatedTasks = [...prevTasks];
+                if (pendingCount > 0) {
+                    updatedTasks[1] = {
+                        ...updatedTasks[1],
+                        title: `${pendingCount} NEW USER${pendingCount > 1 ? 'S' : ''}`,
+                        subtitle: 'NEW USERS INBOUND',
+                        time: 'NOW',
+                        icon: '👤',
+                        bgColor: 'bg-[#85C240]',
+                        onClick: () => onNavigate('new-user')
+                    };
+                }
+                return updatedTasks;
+            });
+        });
+
+        return () => {
+            unsubscribe();
+            unsubscribe2();
+        };
     }, [currentUserId]);
 
     return (
