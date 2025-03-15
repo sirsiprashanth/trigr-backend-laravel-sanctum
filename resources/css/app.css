@@ -6,6 +6,10 @@
     html {
         font-family: "Unbounded", system-ui, sans-serif;
     }
+
+    body {
+        @apply text-gray-300 bg-[#111315];
+    }
 }
 
 /* Font weight utility classes */
@@ -22,14 +26,17 @@
 }
 
 .font-unbounded-500 {
+    font-family: 'Unbounded', sans-serif;
     font-weight: 500;
 }
 
 .font-unbounded-600 {
+    font-family: 'Unbounded', sans-serif;
     font-weight: 600;
 }
 
 .font-unbounded-700 {
+    font-family: 'Unbounded', sans-serif;
     font-weight: 700;
 }
 

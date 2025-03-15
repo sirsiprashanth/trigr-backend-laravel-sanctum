@@ -18,4 +18,12 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+    
+    # Allow direct access to asset files
+    <IfModule mod_headers.c>
+        # Set security headers for assets
+        <FilesMatch "\.(js|css|jpg|jpeg|png|gif|ico|svg)$">
+            Header set Cache-Control "max-age=31536000, public"
+        </FilesMatch>
+    </IfModule>
 </IfModule>
