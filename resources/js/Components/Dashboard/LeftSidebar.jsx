@@ -51,7 +51,7 @@ export default function LeftSidebar({ onNavigate, currentView, currentUserId }) 
     return (
         <div className="fixed left-0 top-0 h-full w-64 bg-[#1A1D1F] p-6 border-r border-gray-800">
             <div className="mb-10">
-                <img src="/path/to/logo.png" alt="TRIGR" className="h-8" />
+                <h1 className="text-xl font-bold text-white">TRIGR</h1>
             </div>
             
             <nav className="space-y-4">
@@ -125,7 +125,7 @@ export default function LeftSidebar({ onNavigate, currentView, currentUserId }) 
                         <span className="font-unbounded-500">CHAT WITH</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <img src="/path/to/ai-avatar.png" alt="TRIGR AI" className="h-8 w-8 rounded-full" />
+                        <span className="text-xl">🤖</span>
                         <span className="font-unbounded-600">TRIGR AI</span>
                     </div>
                 </div>
