@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect('/TrigrWireFrame2/index.html');
+    return redirect('/app/index.html');
 });
 
 Route::get('/dashboard', function () {
