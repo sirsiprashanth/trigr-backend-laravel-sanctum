@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>TrigrWireFrame</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Unbounded.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+    
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background-color: white;
+            padding: 2px;
+        }
+    
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 50px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .navbar-toggler-icon {
+        filter: invert(1); /* This makes it white */
+    }
+    .gradient-text {
+        font-family: Unbounded;
+        font-size: 49.4px;
+        text-align: center;
+        font-weight: 600;
+        background: linear-gradient(to bottom, #AEFFBF, #00AA24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    #downloadPopupContainer {
+    display: none; /* Hide popup by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+}
+
+/* Popup Content */
+.download-popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+/* Close Button */
+.close-download-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+/* iFrame for Content */
+.download-popup-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.scroll-container {
+        overflow-x: auto;  /* Enables horizontal scrolling */
+        white-space: nowrap;  /* Prevents items from wrapping */
+        padding-bottom: 10px; /* Prevents scrollbar from overlapping content */
+    }
+    
+    .scroll-content {
+        display: flex;
+        flex-wrap: nowrap; /* Prevents wrapping to new lines */
+        gap: 15px; /* Adds spacing between cards */
+    }
+
+    .card-item {
+        min-width: 280px; /* Ensures each card has a fixed width */
+        flex: 0 0 auto; /* Prevents shrinking */
+    }
+
+    /* Hide scrollbar for a cleaner look */
+    .scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+    </style>
+
+</head>
+
+<body style="background: #000;">
+    <div class="container px-5">
+        <nav class="navbar navbar-light navbar-expand-md py-3 mt-5"
+            style="color: var(--bs-gray-300);border: 1.4px solid var(--bs-gray-300);border-radius: 40px;">
+            <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><img class="img-fluid"
+                        src="assets/img/Logo.svg" /></a><button class="navbar-toggler" data-bs-toggle="collapse"
+                    data-bs-target="#navcol-3"><span class="visually-hidden">Toggle navigation</span><span
+                        class="navbar-toggler-icon"></span></button>
+                <div id="navcol-3" class="collapse navbar-collapse">
+                    <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active text-uppercase fw-light" href="#" onclick="scrollToGrowth()"
+                            style="color: var(--bs-gray-300); font-family: Unbounded; font-size: 14px;">
+                            Growth
+                        </a>
+                    </li>
+                        <li class="nav-item"><a class="nav-link text-uppercase fw-light" href="#feature-section"
+                                style="color: var(--bs-gray-200);font-family: Unbounded;font-size: 14px;">Key
+                                Features<br /></a></li>
+                    <li class="nav-item">
+                        <a class="nav-link text-uppercase fw-light" href="#" onclick="scrollToEplimo()"
+                            style="color: var(--bs-gray-200); font-family: Unbounded; font-size: 14px;">
+                            EPLIMO
+                        </a>
+                    </li>
+                        <li class="nav-item"><a class="nav-link text-uppercase fw-light" href="#Subscription"
+                                style="color: var(--bs-gray-200);font-family: Unbounded;font-size: 14px;">SUBSCRIPTION<br /></a></li>
+                    </ul><a class="btn btn-primary text-uppercase text-end px-4 py-2" role="button"
+                        style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: var(--bs-success);"
+                        onclick="openDownloadPopup()">
+                        Download now <i class="fas fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </div>
+<!-- Desktop Section -->
+<div class="container d-none d-md-flex" id="growth-desktop">
+    <div class="row mt-5 px-5">
+        <div class="col">
+            <img class="img-fluid" src="assets/img/FirstImage.png" onclick="openDownloadPopup()"
+                >
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Section -->
+<div class="container d-block d-md-none" id="growth-mobile">
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <img class="img-fluid" src="assets/img/AIHuman.png" />
+        </div>
+        <div class="col-md-12 mt-3">
+            <img class="img-fluid" src="assets/img/DownloadImage.png" onclick="openDownloadPopup()" style="cursor:pointer;">
+        </div>
+    </div>
+    <div class="row px-2">
+        <div class="col mt-3 py-5 px-3 d-flex flex-column align-items-center justify-content-center"
+            style="background: var(--bs-white);border-radius: 20px;">
+            <h1 class="text-uppercase fw-light text-center" style="font-family: Unbounded;">
+                Revolutionize Your Workouts,<br /><span class="fw-semibold">Redefine Your Human Potential!<br /></span>
+            </h1>
+        </div>
+    </div>
+</div>
+    <div class="container d-none d-md-flex" id="growth-section">
+        <div class="row">
+            <div class="col px-5"><img class="img-fluid mt-5" src="assets/img/SecondImage.png"></div>
+        </div>
+    </div>
+    <div class="container mt-5 d-block d-md-none">
+        <div class="row px-2">
+            <div class="col py-2"
+            style="background: url('assets/img/Optimization.png') center / cover no-repeat;border-radius: 20px;border: 0.4px solid var(--bs-white);"
+                >
+                <h1 class="text-uppercase fw-semibold text-center"
+                    style="color: var(--bs-white);font-family: Unbounded;margin-bottom: 0px;">Optimizing Human Potential</h1>
+                <h1 class="text-uppercase fw-light text-center" style="color: var(--bs-white);font-family: Unbounded;">
+                    At Scale</h1>
+            </div>
+            <div class="col-md-12 mt-3 py-5"
+               style="border-radius: 25px;background: linear-gradient(95deg, #6DB100, #1A3000 95%);" >
+                <h1 class="fw-semibold text-center mt-5"
+                    style="color: var(--bs-white);font-family: Unbounded;font-size: 49.4px;">10,000+</h1>
+                <p class="text-center mb-5" style="color: var(--bs-white);font-family: Unbounded;">Optimized Workouts</p>
+            </div>
+            <div class="col-md-12 mt-3 py-5"
+                style="background: url('assets/img/Frame 57704.png') center / cover no-repeat;border-radius: 20px;border: 0.1px solid var(--bs-white);">
+                <h1 class="fw-semibold text-center mt-2 "
+                    style="color: var(--bs-white);font-family: Unbounded;font-size: 49.4px;">98%</h1>
+                <p class="text-center mb-1" style="color: var(--bs-white);font-family: Unbounded;">User Satisfaction</p>
+            </div>
+            <div class="col-md-12 mt-3 py-5"
+                style="background: url('assets/img/Frame 57705.png') center / cover no-repeat;border-radius: 20px;border: 0.1px solid var(--bs-white);">
+                <h1 class="fw-semibold text-center mt-2 "
+                    style="color: var(--bs-white);font-family: Unbounded;font-size: 49.4px;">500+</h1>
+                <p class="text-center mb-1" style="color: var(--bs-white);font-family: Unbounded;">Expert Coaches Available</p>
+            </div>
+            <div class="col-md-12 mt-3 py-5"
+                style="border-radius: 20px;border: 0.1px solid var(--bs-white);background: url('assets/img/Frame 57706.png') center / cover no-repeat;">
+                <h1 class="fw-semibold text-center mt-2"
+                    style="color: var(--bs-white);font-family: Unbounded;font-size: 74.4px;">∞<br /></h1>
+                <p class="text-center mb-1" style="color: var(--bs-white);font-family: Unbounded;">Countless Fitness & Performance Goals Achieved</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5 px-5" style>
+        <div class="row" style="background: linear-gradient(#6DB100, #1A3000);border-radius: 10px;">
+            <div class="col-md-6 py-5 ps-5">
+                <p class="fw-light" style="color: var(--bs-white);font-family: Unbounded;"><img class="img-fluid"
+                        src="assets/img/Group 1244831003.svg" style="min-width: 30px;min-height: 30px;width: 35px;" /> OWN
+                    YOUR
+                    STRENGTH<br /></p>
+                <h1 class="text-uppercase fw-light"
+                    style="color: var(--bs-white);font-family: Unbounded;font-size: 35.5px;">$1 Fitness<br /><span
+                        class="text-uppercase fw-semibold">club</span></h1>
+                <h4 class="text-uppercase mt-3" style="color: var(--bs-white);font-family: Unbounded;">Get fit for less
+                    than<br />Your daily caffeine fix<br /></h4><a class="btn btn-primary text-uppercase text-end px-5 mt-5"
+                    role="button"
+                    style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: #6DB100;"
+                    target="_blank" href="Subs1.html">join
+                    now  <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="col-md-6"
+                style="background: url('assets/img/sports-girl-black-top-training-autumn-park 1.png') top / cover no-repeat;">
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 d-none d-md-flex">
+        <div class="col d-flex flex-column align-items-center">
+            <h1 class="text-uppercase fw-light text-center"
+                style="color: var(--bs-white);font-family: Unbounded;font-size: 45.5px;">The Science Of<br />High
+                Performance<br /><span class="text-uppercase fw-semibold">Powered By AI</span></h1>
+        </div>
+    </div>
+    <div class="row mt-5 d-block d-md-none">
+        <div class="col d-flex flex-column align-items-center">
+            <h1 class="text-uppercase fw-light text-center"
+                style="color: var(--bs-white);font-family: Unbounded;font-size: 35.5px;">The Science Of<br />High
+                Performance<br /><span class="text-uppercase fw-semibold">Powered By AI</span></h1>
+        </div>
+    </div>
+
+    <div class="container" id="feature-section">
+        <div class="row mt-5 d-none d-md-flex" style="border-radius: 30px;">
+            <div class="col-md-6 mt-3"><img class="img-fluid" src="assets/img/AIWorkouts.png"></div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-12"><img class="img-fluid mt-3" src="assets/img/AICoach.png"></div>
+                    <div class="col-md-12"><img class="img-fluid mt-3" src="assets/img/CoachingSystem.png"></div>
+                </div>
+            </div>
+            <div class="col-md-6 mt-3 mb-3"><img class="img-fluid" src="assets/img/FaceScan.png"></div>
+            <div class="col-md-6 mt-3 mb-3"><img class="img-fluid" src="assets/img/WearableDevice.png"></div>
+        </div>
+        <div class="row mt-5 px-3 d-block d-md-none" style= "border-radius: 30px;">
+            <div class="col-md-6 mt-3 d-flex flex-column justify-content-end" style="background: url(assets/img/Frame57697.png) center / cover no-repeat;border-radius: 25px;border: 0.4px solid var(--bs-white);">
+                <h5 class="fw-semibold mt-5 ps-md-3" style="color: var(--bs-white);font-family: Unbounded;">AI WORKOUTS</h5>
+                <ul class="pb-5 ps-md-5">
+                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;font-size: 16px;">Real-time movement tracking for flawless form and injury prevention<br></li>
+                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Automated rep counting for effortless tracking.
+<br></li>
+                    <li class="fw-light" style="font-family: Unbounded;color: var(--bs-white);">Instant error detection to correct posture and maximize efficiency.<br></li>
+                </ul>
+            </div>
+            <div class="col-md-6 mt-3 ps-md-4">
+                <div class="row">
+                    <div class="col-md-12 ps-md-4" style="background: var(--bs-black);border-radius: 20px;border-radius: 25px;border: 0.4px solid var(--bs-white);">
+                        <div class="row">
+                            <div class="col-md-12 col-xl-6">
+                                <h5 class="text-uppercase fw-semibold mt-5 ps-md-3" style="color: var(--bs-white);font-family: Unbounded;">AI Coach</h5>
+                                <ul class="ps-md-5">
+                                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Health strategies based on DNA and biometric data.
+<br></li>
+                                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Adaptive fitness and nutrition plans tailored to your genetic blueprint.
+                                        <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">AI-driven performance insights for continuous improvement.
+<br></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-12 col-xl-6"><img class="img-fluid mt-5" src="assets/img/iPhone%20Space%20Black%20Front.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 ps-md-4 mt-3" style="background: #6DB100;border-radius: 25px;border: 0.4px solid var(--bs-white);">
+                        <div class="row">
+                            <div class="col-md-12 col-xl-6"><img class="img-fluid mt-5" src="assets/img/iPhone%20Space%20Black%20Front%20(1).png"></div>
+                            <div class="col-md-12 col-xl-6">
+                                <h5 class="text-uppercase fw-semibold mt-5 ps-md-3" style="color: var(--bs-white);font-family: Unbounded;">coaching system</h5>
+                                <ul class="ps-md-5">
+                                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Connect with certified performance coaches tailored to your needs.
+<br></li>
+                                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">On-demand coaching for immediate expert guidance.
+<br></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mt-3 d-flex flex-column justify-content-end py-5" style="background: url(&quot;assets/img/Frame57705.png&quot;) center / cover no-repeat;border-radius: 25px;border: 0.4px solid var(--bs-white);">
+                <h5 class="text-uppercase fw-semibold mt-5 ps-md-3 pt-5" style="color: var(--bs-white);font-family: Unbounded;">face scan technology</h5>
+                <ul class="ps-md-5">
+                    <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;font-size: 16px;">AI-powered facial analysis to measure stress, fatigue, and recovery levels.
+<br></li>
+<li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;font-size: 16px;">Instant insights for optimizing mental clarity and resilience.
+    <br>
+</li>
+                </ul>
+            </div>
+            <div class="col-md-6 ps-md-4 mt-3" style="background: var(--bs-black);border-radius: 25px;border: 0.4px solid var(--bs-white);">
+                <div class="row">
+                    <div class="col-md-12 col-xl-6">
+                        <h5 class="text-uppercase fw-semibold mt-5 ps-md-3" style="color: var(--bs-white);font-family: Unbounded;">Wearable Device Integration<br></h5>
+                        <ul class="ps-md-5">
+                            <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Sync seamlessly with wearable devices.
+<br></li>
+                            <li class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Track real-time biometrics to fine-tune workouts and recovery strategies.<br></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12 col-xl-6"><img class="img-fluid mt-5" src="assets/img/iPhone%20Space%20Black%20Left.png"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid mt-5"><img class="img-fluid" src="assets/img/Group%205.png"></div>
+    <div class="container mt-5">
+        <div class="col d-none d-md-block">
+            <h1 class="text-uppercase fw-light text-center"
+                style="font-family: Unbounded;color: var(--bs-white);font-size: 55.5px;">&nbsp;<span class="fw-semibold"
+                    style="font-family: Unbounded;font-size: 55.5px;">Unlock</span> Your<br> Genetic Potential
+                <br>With&nbsp;<span class="fw-semibold"
+                    style="font-family: Unbounded;font-size: 55.5px;">Eplimo</span>&nbsp;<br></h1>
+            <p class="fw-light text-center mt-2 px-5" style="color: var(--bs-white);font-family: Unbounded;font-size: 13px;">
+                Your Blueprint To Peak Performance, Backed By Science.<br></p>
+        </div>
+        <div class="col d-block d-md-none" id="eplimo1">
+            <h1 class="text-uppercase fw-light text-center"
+                style="font-family: Unbounded;color: var(--bs-white);font-size: 35.5px;">&nbsp;<span class="fw-semibold"
+                    style="font-family: Unbounded;font-size: 35.5px;">Unlock</span> Your<br> Genetic Potential
+                <br>With&nbsp;<span class="fw-semibold"
+                    style="font-family: Unbounded;font-size: 35.5px;">Eplimo</span>&nbsp;<br>
+            </h1>
+            <p class="fw-light text-center mt-2 px-5" style="color: var(--bs-white);font-family: Unbounded;font-size: 13px;">
+                Your Blueprint To Peak Performance, Backed By Science.<br></p>
+        </div>
+
+        <div class="row mt-5 px-md-5 d-none d-md-flex" id="eplimo-desktop">
+            <div class="col-md-6">
+                <img class="img-fluid" src="assets/img/Users.png" onclick="openPopup()">
+            </div>
+            <div class="col-md-6">
+                <img class="img-fluid" src="assets/img/Exisiting.png" onclick="openPopup()">
+            </div>
+        </div>
+
+        <div class="row mt-5 d-block d-md-none" id="eplimo-mobile">
+            <div class="col-md-6">
+                <img class="img-fluid" src="assets/img/UserMobile.png" onclick="openPopup()">
+            </div>
+            <div class="col-md-6 mt-4">
+                <img class="img-fluid" src="assets/img/ExistingMobile.png" onclick="openPopup()">
+            </div>
+        </div>
+
+        <!-- Full-Screen Modal -->
+        <div id="popupModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <iframe src="PopUp.html"></iframe>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5" id="trigr-section">
+        <div class="row px-md-5">
+            <div class="col-md-6"><img class="img-fluid" src="assets/img/ElevatePerformance.png"></div>
+            <div class="col">
+                <div class="row px-2">
+                    <div class="col-md-12 d-flex flex-column align-items-start justify-content-center py-5 mt-4" style="background: linear-gradient(#6DB100 30%, #1A3000 100%);border-radius: 25px;border: 1.4px solid var(--bs-white) ;">
+                        <h5 class="text-uppercase fw-semibold" style="border-style: none;border-color: var(--bs-white);color: var(--bs-white);font-family: Unbounded;">Ai Advantage</h5>
+                        <p class="fw-light mt-2" style="font-family: Unbounded;color: var(--bs-white);">Precision-driven<span
+                                class="fw-semibold"> AI coaching, real-time tracking, and biometric insights to eliminate
+                                guesswork<br /></span>and <span class="fw-semibold">maximize efficiency.</span><br /></p>
+                    </div>
+                    <div class="col-md-12 d-flex flex-column align-items-start justify-content-center py-4 mt-3" style="background: linear-gradient(#6DB100 36%, #1A3000 100%);border-radius: 25px;border: 1.4px solid var(--bs-white) ;">
+                        <h5 class="text-uppercase fw-semibold" style="border-style: none;border-color: var(--bs-white);color: var(--bs-white);font-family: Unbounded;">Seamless Integration</h5>
+                        <p class="fw-light mt-2" style="font-family: Unbounded;color: var(--bs-white);">Sync your<span
+                                class="fw-semibold"> wearables, genetic data, and AI-driven workouts </span>into <span class="fw-semibold">one
+                                powerful performance hub.</span><br /></p>
+                    </div>
+                    <div class="col-md-12 d-flex flex-column align-items-start justify-content-center py-4 mt-3" style="background: linear-gradient(#6DB100 36%, #1A3000 100%);border-radius: 25px;border: 1.4px solid var(--bs-white) ;">
+                        <h5 class="text-uppercase fw-semibold" style="border-style: none;border-color: var(--bs-white);color: var(--bs-white);font-family: Unbounded;">Join a Thriving Community</h5>
+                        <p class="fw-light mt-2" style="font-family: Unbounded;color: var(--bs-white);">Surround yourself with<span
+                                class="fw-semibold"> high achievers, biohackers, and elite fitness professionals.</span>
+                            Stay motivated, share insights, and grow together.<br /></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="container-fluid mt-5">
+    <div class="row ps-md-5">
+        <div class="col-md-3 py-2" style="background: linear-gradient(#6DB100, #1A3000);border-radius: 15px;">
+            <div class="row">
+                <div class="col-md-12 ps-3" style="border-radius: 0px;">
+                    <h5 class="text-uppercase fw-light pt-5"
+                        style="color: var(--bs-white);font-family: Unbounded;font-size: 25.5px;">Smart
+                        Fitness,<br /><span class="text-uppercase fw-semibold">Smarter <br />Prices.<br /></span></h5>
+                    <p class="mt-3" style="color: var(--bs-white);font-family: Unbounded;">Explore Your Plan, Start Your
+                        Journey Today!<br /></p><img class="img-fluid" src="assets/img/Monotone arrow right.svg" />
+                </div>
+                <div class="col-md-12 d-flex flex-column align-items-end"
+                    style="background: url('portrait-woman-confidence-fitness-empowerment-smile-light-gray-background-workout-strong-exercise-athlete-person-gloves-training-studio-personal-trainer 1.png') no-repeat;">
+                    <img class="img-fluid"
+                        src="assets/img/portrait-woman-confidence-fitness-empowerment-smile-light-gray-background-workout-strong-exercise-athlete-person-gloves-training-studio-personal-trainer 1.png" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 py-2" id="Subscription">
+            <div class="card h-100">
+                <div class="card-body flex-grow-0 p-4" style="background: #24262B;"><img
+                        class="img-fluid d-md-flex justify-content-md-center" src="assets/img/Frame 1597885073.svg" /></div>
+                <div class="card-footer d-flex flex-column flex-grow-1 justify-content-between p-4">
+                    <div>
+                        <h4 style="font-family: Unbounded;">What You’ll Get<br /></h4>
+                        <ul class="list-unstyled mt-3">
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Face scan
+                                    feature with 3 Scan Tokens<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Limited AI Coach
+                                    - feature with only 3 queries per day<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Access to
+                                    coaching module<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Basic EPLIMO
+                                    report access<br /></span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="px-3 pb-5 d-flex flex-column justify-content-center" style="background: #24262B;">
+                    <h2 class="fw-bold pt-5" style="color: var(--bs-gray-200);font-family: Unbounded;">$0<span
+                            class="fs-3 fw-normal text-muted" style="color: #fff;">/mo</span></h2>
+                            <a class="btn btn-primary mt-3" role="button"
+                                style="background: #393C43;border-width: 1px;border-color: #6DB100;border-radius: 10px;font-family: Unbounded;"
+                                href="Subs2.html" target="_blank">CHOOSE <i class="fas fa-arrow-right" style="font-size: 17px;"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 py-2">
+            <div class="card h-100">
+                <div class="card-body flex-grow-0 p-4" style="background: #24262B;"><img
+                        class="img-fluid d-md-flex justify-content-md-center" src="assets/img/Frame 1597885073 (1).svg" /></div>
+                <div class="card-footer d-flex flex-column flex-grow-1 justify-content-between p-4">
+                    <div>
+                        <h4 style="font-family: Unbounded;">What You’ll Get<br /></h4>
+                        <ul class="list-unstyled mt-3">
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Face scan feature with 10 Scan Tokens<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Unlimited access to 1 Dollar Fitness Club (AI Trainer)<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">AI Coach - with limited queries<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Includes 1 consultation with a real coach<br /></span></li>
+                                    <li class="d-flex mb-2"><span class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                                class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                                </path>
+                                            </svg></span><span class="fw-light" style="font-family: Unbounded;">Full EPLIMO report with Insights + Recommendations<br /></span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="px-3 pb-5 d-flex flex-column justify-content-center" style="background: #24262B;">
+                    <h2 class="fw-bold pt-5" style="color: var(--bs-gray-200);font-family: Unbounded;">$649<span
+                            class="fs-3 fw-normal text-muted" style="color: #fff;">/mo</span></h2>
+                        <a class="btn btn-primary mt-3" role="button"
+                            style="background: #393C43;border-width: 1px;border-color: #6DB100;border-radius: 10px;font-family: Unbounded;"
+                            href="Subs3.html" target="_blank">CHOOSE <i class="fas fa-arrow-right" style="font-size: 17px;"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 py-2">
+            <div class="card h-100">
+                <div class="card-body flex-grow-0 p-4" style="background: #24262B;">
+                    <p style="color: #9CC94D;font-family: Unbounded;"><i class="fa fa-star-o"></i> MOST POPULAR</p><img
+                        class="img-fluid d-md-flex justify-content-md-center" src="assets/img/Frame 1597885073 (2).svg" />
+                </div>
+                <div class="card-footer d-flex flex-column flex-grow-1 justify-content-between p-4"
+                    style="background: #9CC94D;">
+                    <div>
+                        <h4 style="font-family: Unbounded;">What You’ll Get<br /></h4>
+                        <ul class="list-unstyled mt-3">
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Face scan feature with 20 Scan Tokens<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Unlimited access to 1 Dollar Fitness Club (AI Trainer)<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">AI Coach - with unlimited queries<br /></span></li>
+                            <li class="d-flex mb-2"><span
+                                    class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                        class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        height="1em" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                        </path>
+                                    </svg></span><span class="fw-light" style="font-family: Unbounded;">Includes 2 consultations with a real coach<br /></span></li>
+                                    <li class="d-flex mb-2"><span class="bs-icon-xs bs-icon-rounded bs-icon-primary-light bs-icon me-2"><svg
+                                                class="bi bi-check-lg" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z">
+                                                </path>
+                                            </svg></span><span class="fw-light" style="font-family: Unbounded;">All Plus features plus additional Counselling for EPLIMO reports<br /></span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="px-3 pb-5 d-flex flex-column justify-content-center" style="background: #24262B;">
+                    <h2 class="fw-bold pt-5" style="color: var(--bs-gray-200);font-family: Unbounded;">$999<span
+                            class="fs-3 fw-normal text-muted" style="color: #fff;">/mo</span></h2>
+                            <a class="btn btn-primary mt-3" role="button"
+                                style="background: #393C43;border-width: 1px;border-color: #6DB100;border-radius: 10px;font-family: Unbounded;"
+                                href="Subs4.html" target="_blank">CHOOSE  <i class="fas fa-arrow-right" style="font-size: 17px;"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 px-5">
+<div class="col d-none d-md-block">
+    <h1 class="text-uppercase fw-light text-center"
+        style="font-family: Unbounded;color: var(--bs-white);font-size: 40.5px;">&nbsp;<span class="fw-semibold"
+            style="font-family: Unbounded;font-size: 40.5px;">PRICE</span>&nbsp;COMPARISION&nbsp;&nbsp;<br></h1>
+            <p class="fw-light text-center mt-2 px-5" style="color: var(--bs-white);font-family: Unbounded;font-size: 13px;">
+                Your Blueprint To Peak Performance, Backed By Science.<br></p>
+</div>
+<div class="col d-block d-md-none">
+    <h1 class="text-uppercase fw-light text-center"
+        style="font-family: Unbounded;color: var(--bs-white);font-size: 20.5px;">&nbsp;<span class="fw-semibold"
+            style="font-family: Unbounded;font-size: 20.5px;">PRICE</span>&nbsp;COMPARISION&nbsp;&nbsp;<br></h1>
+            <p class="fw-light text-center mt-2 px-5" style="color: var(--bs-white);font-family: Unbounded;font-size: 13px;">
+            Your Blueprint To Peak Performance, Backed By Science.<br></p>
+</div>
+</div>
+
+<div class="container mt-5 px-5">
+    <div class="table-responsive" style="background: #24262B;border-radius: 15px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="pt-4" style="color: var(--bs-white);font-family: Unbounded;font-size: 16px;">What
+                        you&#39;ll get<br /></th>
+                    <th class="text-uppercase"
+                        style="font-family: Unbounded;color: var(--bs-white);text-align: center;">free plan</th>
+                    <th class="text-uppercase"
+                        style="font-family: Unbounded;color: var(--bs-white);text-align: center;">plus plan</th>
+                    <th class="text-uppercase"
+                        style="font-family: Unbounded;color: var(--bs-white);background: #6DB100;border-top-left-radius: 10px;border-top-right-radius: 10px;text-align: center;">
+                        pro plan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        face scan</td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        AI Trainer</td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        AI coach (maia)</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle"
+                            style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Hire a Real coach</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Eplimo Report</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        health tracker</td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Store acess</td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Diet plans and recipies</td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        reward system</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        AI Based recommendations based on health and nutrition tracking</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        bio age</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-check-circle" style="font-size: 17px;color: #6DB100;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Health Intelligence assessment</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;background: #6DB100;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-capitalize fw-light"
+                        style="font-family: Unbounded;color: var(--bs-white);font-size: 14px;text-decoration: underline;">
+                        Trainer Workout Video Library</td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;"><i class="fas fa-minus-circle" style="font-size: 17px;color: #F83E59;"></i></td>
+                    <td style="text-align: center;background: #6DB100;border-bottom-right-radius: 10px;border-bottom-left-radius: 10px;"><i class="fas fa-check-circle"
+                            style="font-size: 17px;color: #fff;"></i></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="container mt-5 px-5">
+        <div class="col d-none d-md-block">
+            <h1 class="text-uppercase fw-light text-center" style="font-family: Unbounded;color: var(--bs-white);font-size: 40.5px;">&nbsp;<span class="fw-semibold" style="font-family: Unbounded;font-size: 40.5px;">transformations</span>&nbsp;<br>that inspire&nbsp;&nbsp;<br></h1>
+        </div>
+        <div class="col d-block d-md-none">
+            <h1 class="text-uppercase fw-light text-center" style="font-family: Unbounded;color: var(--bs-white);font-size: 20.5px;">&nbsp;<span class="fw-semibold" style="font-family: Unbounded;font-size: 20.5px;">transformations</span>&nbsp;<br>that inspire&nbsp;&nbsp;<br></h1>
+        </div>
+        <div class="row mt-3 px-md-5">
+            <div class="col-md-6 d-flex flex-column justify-content-end"
+                style="background: url('assets/img/Frame%2057693%20(2).png') center / cover no-repeat; min-height: 450px; border-radius: 20px;">
+                <p class="fw-light ps-4 p-3" style="font-family: Unbounded; color: var(--bs-white);">
+                    "TRIGR didn't just change how I train—it changed how I optimize my body and mind. I’ve never felt this dialed in!"
+                </p>
+                <p class="fw-semibold ps-4 pb-5" style="color: var(--bs-white); font-family: Unbounded;">
+                    – Jamie Lee, Biohacker & Fitness Enthusiast
+                </p>
+            </div>
+            <div class="col-md-6 d-flex flex-column justify-content-end"
+                style="background: url('assets/img/Frame%2057694%20(1).png') center / cover no-repeat; border-radius: 15px;">
+                <p class="fw-light ps-4 p-3" style="font-family: Unbounded; color: var(--bs-white);">
+                "Finally, an AI-powered system that understands my body better than I do! TRIGR + EPLIMO is a game-changer for
+                performance."
+                </p>
+                <p class="fw-semibold ps-4 pb-5" style="color: var(--bs-white); font-family: Unbounded;">
+                    – Alex Carter, Professional Athlete
+                </p>
+            </div>
+        </div>
+
+        <div class="row  d-none d-md-flex"
+            style="background: url(&quot;assets/img/LastImage.png&quot;) center / cover no-repeat;border-radius: 25px;">
+            <div class="col-md-12 ps-md-5 ">
+                <h1 class="text-uppercase fw-light" style="font-family: Unbounded;color: var(--bs-white);font-size: 55.5px;">
+                    &nbsp;&nbsp;<br>Ready To Unlock<br>The Next Level Of<br><span class="fw-semibold"
+                        style="font-family: Unbounded;font-size: 55.5px;">Human<br>Performance?<br></span>&nbsp;&nbsp;<br></h1>
+            </div>
+            <div class="col">
+                <div class="row pb-5 mt-3 mb-3">
+                    <div class="col-md-6 ps-4">
+                        <p class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Join the elite movement of
+                            individuals optimizing their minds, bodies, and longevity with TRIGR. Download the app now
+                            and start your journey to high performance!<br></p>
+                    </div>
+                    <div class="col-md-6 d-flex flex-column align-items-end justify-content-end pe-5">
+                        <a class="btn btn-primary text-uppercase text-end px-5" role="button"
+                            style="border-radius: 13px;font-family: Unbounded;background: linear-gradient(84deg, #00D600, #000);font-size: 12px;"
+                            onclick="openDownloadPopup()">
+                            Download now&nbsp;<i class="fas fa-arrow-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5 d-block d-md-none" style="background: url(&quot;assets/img/LastImage.png&quot;) center / cover no-repeat;border-radius: 25px;">
+            <div class="col-md-12 ps-md-5 mt-5">
+                <h1 class="text-uppercase fw-light" style="font-family: Unbounded;color: var(--bs-white);font-size: 35.5px;">&nbsp;&nbsp;<br>Ready To Unlock<br>The Next Level Of<br><span class="fw-semibold" style="font-family: Unbounded;font-size: 25.5px;">Human<br>Performance?<br></span>&nbsp;&nbsp;<br></h1>
+            </div>
+            <div class="col">
+                <div class="row pb-5 mt-5 mb-3">
+                    <div class="col-md-6 ps-4">
+                        <p class="fw-light" style="color: var(--bs-white);font-family: Unbounded;">Join the elite movement of individuals optimizing their minds, bodies, and longevity with TRIGR. Download the app now
+                        and start your journey to high performance!<br></p>
+                    </div>
+                <div class="col-md-6 d-flex flex-column align-items-end justify-content-end pe-5">
+                    <a class="btn btn-primary text-uppercase text-end px-5" role="button"
+                        style="border-radius: 13px;font-family: Unbounded;background: linear-gradient(84deg, #00D600, #000);font-size: 12px;"
+                        onclick="openDownloadPopup()">
+                        Download now&nbsp;<i class="fas fa-arrow-down"></i>
+                    </a>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Full-Screen Download Popup -->
+    <div id="downloadPopupContainer">
+        <div class="download-popup-content">
+            <span class="close-download-popup" onclick="closeDownloadPopup()">&times;</span>
+            <iframe src="choose.html"></iframe>
+        </div>
+    </div>
+    <div class="container mt-5 mb-5">
+        <div class="row" style="border-radius: 20px;background: #292929;">
+            <div class="col-md-6 ps-5">
+                <h6 class="mt-5" style="color: var(--bs-white);">The most advanced AI-powered app for individuals, fitness enthusiasts, and health professionals to optimize, manage, track, and enhance their fitness journey.<br></h6><img class="img-fluid mt-3" src="assets/img/Logo%20(1).png">
+            </div>
+            <div class="col-md-3"></div>
+            <div class="col-md-3 d-flex flex-column justify-content-center pe-md-3 my-3">
+                <ul class="list-inline" style="border-color: var(--bs-white);">
+                    <li class="list-inline-item" style="color: var(--bs-white);"><a class="text-uppercase fw-light" href="#" onclick="scrollToGrowth()" style="color: var(--bs-gray-400);font-family: Unbounded;">growth</a></li>
+                    <li class="list-inline-item" style="color: var(--bs-white);"><a class="text-uppercase fw-light ps-3" href="#" onclick="scrollToEplimo()" style="color: var(--bs-gray-400);font-family: Unbounded;">eplimo</a></li>
+                </ul>
+                <ul class="list-inline" style="border-color: var(--bs-white);">
+                    <li class="list-inline-item" style="color: var(--bs-white);"><a class="text-uppercase fw-light" href="#feature-section" style="color: var(--bs-gray-400);font-family: Unbounded;">key features</a></li>
+                    <li class="list-inline-item" style="color: var(--bs-white);"><a class="text-uppercase fw-light ps-3" href="#trigr-section" style="color: var(--bs-gray-400);font-family: Unbounded;">why trigr?</a></li>
+                </ul>
+            </div>
+            <div class="col mt-5"><img class="img-fluid mb-3 mt-5 pt-5" src="assets/img/Vector%20(18).png"></div>
+        </div>
+    </div>
+    <script>
+        function openPopup() {
+            document.getElementById("popupModal").style.display = "block";
+        }
+        function closePopup() {
+            document.getElementById("popupModal").style.display = "none";
+        }
+    </script>
+
+    <script>
+        function scrollToEplimo() {
+                event.preventDefault(); // Prevent default link behavior
+
+                let desktopSection = document.getElementById("eplimo-desktop");
+                let mobileSection = document.getElementById("eplimo-mobile");
+
+                // Check screen width and scroll to the correct section
+                if (window.innerWidth >= 768 && desktopSection) {
+                    desktopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else if (window.innerWidth < 768 && mobileSection) {
+                    mobileSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+
+    </script>
+
+    <script>
+        function scrollToGrowth() {
+                event.preventDefault(); // Prevent default link behavior
+
+                let desktopSection = document.getElementById("growth-desktop");
+                let mobileSection = document.getElementById("growth-mobile");
+
+                // Check screen width and scroll to the correct section
+                if (window.innerWidth >= 768 && desktopSection) {
+                    desktopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else if (window.innerWidth < 768 && mobileSection) {
+                    mobileSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+
+    </script>
+    <script>
+        function openDownloadPopup() {
+            document.getElementById("downloadPopupContainer").style.display = "block";
+        }
+
+        function closeDownloadPopup() {
+            document.getElementById("downloadPopupContainer").style.display = "none";
+        }
+    </script>
+
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
