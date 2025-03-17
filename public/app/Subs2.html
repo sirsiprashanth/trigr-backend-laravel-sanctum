@@ -5,12 +5,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>TrigrWireFrame</title>
+    <link rel="icon" href="assets/img/Logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/Unbounded.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/css/Navbar-Centered-Links-icons.css">
     <link rel="stylesheet" href="assets/css/Pricing-Yearly--Monthly-badges.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Add Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <style>
   
         .fitness-form-wrapper {
@@ -57,7 +62,26 @@
         }
         .navbar-toggler-icon {
         filter: invert(1); /* This makes it white */
-    }
+        }
+        .error-message {
+            color: #ff6b6b;
+            font-family: Unbounded;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -96,7 +120,7 @@
                     </ul><a class="btn btn-primary text-uppercase text-end px-4 py-2" role="button"
                         style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: var(--bs-success);"
                         onclick="openDownloadPopup()">
-                        Download now <i class="fas fa-arrow-down"></i>
+                        Download now <i class="fas fa-arrow-down"></i>
                     </a>
                 </div>
             </div>
@@ -108,18 +132,21 @@
                 <h1 class="fw-light text-uppercase" style="font-family: Unbounded;color: var(--bs-white);">THANK YOU <br>CHOOSING THE<br><span class="fw-semibold">TRIGR free plan<br></span></h1>
                 <p class="mt-3" style="font-family: Unbounded;color: var(--bs-white);">We just need a few more details from you before you can continue your fitness journey with us!<br></p>
 
-            <form class="mt-5">
+            <form id="subscriptionForm" class="mt-5">
                 <div class="fitness-input-group mt-2">
-                    <input type="text" class="fitness-input" placeholder="Enter Your Full Name" required>
+                    <input type="text" id="fullName" name="fullName" class="fitness-input" placeholder="Enter Your Full Name" required>
                 </div>
                 <div class="fitness-input-group mt-2">
-                    <input type="tel" class="fitness-input" placeholder="Enter Your Phone Number" required>
+                    <input type="tel" id="phone" name="phone" class="fitness-input" placeholder="Enter Your Phone Number" required>
                 </div>
                 <div class="fitness-input-group mt-2">
-                    <input type="email" class="fitness-input" placeholder="Enter Your Email" required>
+                    <input type="email" id="email" name="email" class="fitness-input" placeholder="Enter Your Email" required>
                 </div>
-               
-                <button type="submit" class="fitness-btn mt-4">CONTINUE T0 CHECKOUT&nbsp;<i class="fas fa-arrow-right"></i></button>
+                <div id="errorMessage" class="error-message"></div>
+                <button type="submit" id="submitButton" class="fitness-btn mt-4">
+                    CONTINUE TO CHECKOUT&nbsp;<i class="fas fa-arrow-right"></i>
+                    <span id="loadingSpinner" class="loading-spinner"></span>
+                </button>
             </form>
                 
             </div>
@@ -150,6 +177,78 @@
         </div>
     </div>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCigZCPNGgr5-gF5a-P4uP-NYWb0usyVx4",
+            authDomain: "trigr-community.firebaseapp.com",
+            projectId: "trigr-community",
+            storageBucket: "trigr-community.appspot.com",
+            messagingSenderId: "1000776789412",
+            appId: "1:1000776789412:web:f91dfd8aad45ca1b9d6531",
+            measurementId: "G-1NM1K1CMJ5",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Handle form submission
+        document.getElementById('subscriptionForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const submitButton = document.getElementById('submitButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Display loading spinner
+            loadingSpinner.style.display = 'inline-block';
+            submitButton.disabled = true;
+            errorMessage.textContent = '';
+            
+            // Get form data
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            
+            try {
+                // Generate a unique subscription ID
+                const subscriptionId = generateSubscriptionId();
+                
+                // Create subscription data
+                const subscriptionData = {
+                    subscriptionId: subscriptionId,
+                    fullName: fullName,
+                    phone: phone,
+                    email: email,
+                    planType: 'free_plan',
+                    createdAt: new Date(),
+                    status: 'active'
+                };
+                
+                console.log('Saving subscription data:', subscriptionData);
+                
+                // Save to Firestore
+                await db.collection('subscriptionPlans').add(subscriptionData);
+                
+                console.log('Subscription data saved successfully');
+                
+                // Redirect to success page
+                window.location.href = 'Final.html';
+            } catch (error) {
+                console.error('Error saving subscription data:', error);
+                errorMessage.textContent = 'Error submitting form. Please try again.';
+                loadingSpinner.style.display = 'none';
+                submitButton.disabled = false;
+            }
+        });
+        
+        // Generate a random subscription ID (similar to the 6-digit code in CoachingPlanModal)
+        function generateSubscriptionId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+    </script>
 </body>
 
 </html>
