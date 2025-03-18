@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Payment Processing - Trigr Fitness</title>
+    <link rel="icon" href="assets/img/Logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Unbounded.css">
+    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Add Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Unbounded', sans-serif;
+        }
+        .processing-container {
+            text-align: center;
+            margin-top: 100px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,.1);
+            border-radius: 50%;
+            border-top-color: #6DB100;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="processing-container">
+            <img src="assets/img/Logo.svg" width="150" alt="Trigr Fitness">
+            <h2 class="mt-4">Processing Your Payment</h2>
+            <div class="spinner"></div>
+            <p id="statusText">Verifying payment details...</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCigZCPNGgr5-gF5a-P4uP-NYWb0usyVx4",
+            authDomain: "trigr-community.firebaseapp.com",
+            projectId: "trigr-community",
+            storageBucket: "trigr-community.appspot.com",
+            messagingSenderId: "1000776789412",
+            appId: "1:1000776789412:web:f91dfd8aad45ca1b9d6531",
+            measurementId: "G-1NM1K1CMJ5",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get payment details from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentId = urlParams.get('razorpay_payment_id');
+            const paymentStatus = urlParams.get('status');
+            
+            // Try to get customer information from various sources
+            
+            // First check URL parameters (from our redirect)
+            const email = urlParams.get('email') || '';
+            const phone = urlParams.get('phone') || urlParams.get('contact') || '';
+            const fullName = urlParams.get('fullName') || urlParams.get('name') || '';
+            
+            // If not in URL, try localStorage (our backup storage)
+            const emailFromStorage = localStorage.getItem('user_email') || '';
+            const phoneFromStorage = localStorage.getItem('user_phone') || '';
+            const fullNameFromStorage = localStorage.getItem('user_fullName') || '';
+            
+            // Use the data from URL or localStorage, prioritizing URL
+            const customerInfo = {
+                email: email || emailFromStorage,
+                phone: phone || phoneFromStorage,
+                fullName: fullName || fullNameFromStorage
+            };
+            
+            // Clear localStorage user data after reading
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('user_phone');
+            localStorage.removeItem('user_fullName');
+            
+            // Get subscription ID from URL or localStorage
+            const subscriptionDocId = urlParams.get('subscriptionId') || localStorage.getItem('pendingSubscriptionId');
+            
+            console.log('Payment verification with customer info:', {
+                paymentId, 
+                paymentStatus, 
+                subscriptionDocId, 
+                customerInfo
+            });
+            
+            if (paymentId && subscriptionDocId) {
+                // Payment was successful, update Firestore
+                updateSubscriptionStatus(subscriptionDocId, paymentId, customerInfo);
+            } else if (paymentStatus === 'failed') {
+                // Payment failed
+                document.getElementById('statusText').innerHTML = 'Payment failed. <a href="Subs3.html" style="color: #6DB100">Try again</a>';
+            } else if (subscriptionDocId) {
+                // No payment ID but we have a subscription - check its status in Firestore
+                checkSubscriptionStatus(subscriptionDocId, customerInfo);
+            } else {
+                // No valid payment information
+                document.getElementById('statusText').innerHTML = 'Invalid payment information. <a href="Subs3.html" style="color: #6DB100">Try again</a>';
+            }
+        });
+        
+        async function updateSubscriptionStatus(docId, paymentId, customerInfo = {}) {
+            try {
+                // Create update data
+                const updateData = {
+                    status: 'active',
+                    paymentStatus: 'completed',
+                    paymentId: paymentId,
+                    paymentTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    clientSideUpdate: true,
+                    clientUpdateTimestamp: new Date().toISOString()
+                };
+                
+                // Add customer info if available
+                if (customerInfo.email) updateData.email = customerInfo.email;
+                if (customerInfo.phone) updateData.phone = customerInfo.phone;
+                if (customerInfo.fullName) updateData.fullName = customerInfo.fullName;
+                
+                // Update the Firestore document with payment details
+                await db.collection('subscriptionPlans').doc(docId).update(updateData);
+                
+                console.log('Payment successful, subscription activated', updateData);
+                document.getElementById('statusText').textContent = 'Payment successful! Redirecting...';
+                
+                // Clear localStorage
+                localStorage.removeItem('pendingSubscriptionId');
+                
+                // Redirect to success page with parameters
+                setTimeout(() => {
+                    // Create URL with all params
+                    let finalUrl = `Final.html?paymentId=${paymentId}&subscriptionId=${docId}`;
+                    
+                    // Add customer info if available
+                    if (customerInfo.email) finalUrl += `&email=${encodeURIComponent(customerInfo.email)}`;
+                    if (customerInfo.phone) finalUrl += `&phone=${encodeURIComponent(customerInfo.phone)}`;
+                    if (customerInfo.fullName) finalUrl += `&fullName=${encodeURIComponent(customerInfo.fullName)}`;
+                    
+                    // Add update source
+                    finalUrl += '&updated_by=client';
+                    
+                    window.location.href = finalUrl;
+                }, 2000);
+            } catch (error) {
+                console.error('Error updating subscription status:', error);
+                document.getElementById('statusText').innerHTML = 'Error updating subscription. Please contact support. <br><small>Error: ' + error.message + '</small>';
+            }
+        }
+        
+        // New function to check if a webhook has already updated the status
+        async function checkSubscriptionStatus(docId, customerInfo = {}) {
+            try {
+                // Get the subscription document
+                const doc = await db.collection('subscriptionPlans').doc(docId).get();
+                
+                if (!doc.exists) {
+                    document.getElementById('statusText').innerHTML = 'Subscription not found. <a href="Subs3.html" style="color: #6DB100">Try again</a>';
+                    return;
+                }
+                
+                const data = doc.data();
+                
+                // Log the current state of the subscription
+                console.log('Subscription status check:', {
+                    docId,
+                    status: data.status,
+                    paymentStatus: data.paymentStatus,
+                    paymentId: data.paymentId,
+                    webhook_updated: data.webhook_updated || false
+                });
+                
+                // If we have customer info that wasn't in the database, update it
+                let shouldUpdateCustomerInfo = false;
+                const customerUpdates = {};
+                
+                if (customerInfo.email && (!data.email || data.email === 'N/A')) {
+                    customerUpdates.email = customerInfo.email;
+                    shouldUpdateCustomerInfo = true;
+                }
+                
+                if (customerInfo.phone && (!data.phone || data.phone === 'N/A')) {
+                    customerUpdates.phone = customerInfo.phone;
+                    shouldUpdateCustomerInfo = true;
+                }
+                
+                if (customerInfo.fullName && (!data.fullName || data.fullName === 'N/A')) {
+                    customerUpdates.fullName = customerInfo.fullName;
+                    shouldUpdateCustomerInfo = true;
+                }
+                
+                // Update customer info if needed
+                if (shouldUpdateCustomerInfo) {
+                    console.log('Updating customer information:', customerUpdates);
+                    await db.collection('subscriptionPlans').doc(docId).update(customerUpdates);
+                }
+                
+                // Check if payment was already marked as complete (e.g., by webhook)
+                if (data.paymentStatus === 'completed' || data.status === 'active') {
+                    console.log('Payment already completed', data.webhook_updated ? 'by webhook' : 'by client');
+                    document.getElementById('statusText').textContent = 'Payment successful! Redirecting...';
+                    
+                    // Clear localStorage
+                    localStorage.removeItem('pendingSubscriptionId');
+                    
+                    // Redirect to success page with subscription ID
+                    setTimeout(() => {
+                        // Create URL with params
+                        let finalUrl = `Final.html?subscriptionId=${docId}`;
+                        if (data.paymentId) {
+                            finalUrl += `&paymentId=${data.paymentId}`;
+                        }
+                        
+                        // Add customer info if available
+                        if (customerInfo.email) finalUrl += `&email=${encodeURIComponent(customerInfo.email)}`;
+                        if (customerInfo.phone) finalUrl += `&phone=${encodeURIComponent(customerInfo.phone)}`;
+                        if (customerInfo.fullName) finalUrl += `&fullName=${encodeURIComponent(customerInfo.fullName)}`;
+                        
+                        // Add update source
+                        finalUrl += data.webhook_updated ? '&updated_by=webhook' : '&updated_by=client';
+                        
+                        window.location.href = finalUrl;
+                    }, 2000);
+                } else if (data.paymentStatus === 'failed') {
+                    document.getElementById('statusText').innerHTML = 'Payment failed. <a href="Subs3.html" style="color: #6DB100">Try again</a>';
+                } else {
+                    // Still waiting for payment confirmation
+                    document.getElementById('statusText').textContent = 'Waiting for payment confirmation...';
+                    
+                    // Check if we've been waiting for too long
+                    let waitingTooLong = false;
+                    
+                    // If server timestamp exists, use it to calculate waiting time
+                    if (data.createdAt && data.createdAt.toDate) {
+                        const createdTime = data.createdAt.toDate();
+                        const waitTime = new Date() - createdTime;
+                        console.log(`Waiting for ${Math.round(waitTime/1000)} seconds since subscription creation`);
+                        
+                        // If it's been more than 45 seconds, assume webhook isn't coming
+                        if (waitTime > 45000) {
+                            waitingTooLong = true;
+                        }
+                    } else if (data.clientTimestamp) {
+                        // Fallback to client timestamp if server timestamp isn't available
+                        const createdTime = new Date(data.clientTimestamp);
+                        const waitTime = new Date() - createdTime;
+                        console.log(`Waiting for ${Math.round(waitTime/1000)} seconds since client timestamp`);
+                        
+                        // If it's been more than 45 seconds, assume webhook isn't coming
+                        if (waitTime > 45000) {
+                            waitingTooLong = true;
+                        }
+                    } else {
+                        // No timestamp available, check if we have a subscription creation time in localStorage
+                        const creationTimeStr = localStorage.getItem('subscriptionCreatedAt');
+                        if (creationTimeStr) {
+                            const createdTime = new Date(creationTimeStr);
+                            const waitTime = new Date() - createdTime;
+                            console.log(`Waiting for ${Math.round(waitTime/1000)} seconds based on localStorage timestamp`);
+                            
+                            // If it's been more than 45 seconds, assume webhook isn't coming
+                            if (waitTime > 45000) {
+                                waitingTooLong = true;
+                            }
+                        }
+                    }
+                    
+                    if (waitingTooLong) {
+                        // We've waited long enough, assume payment was successful but webhook failed
+                        document.getElementById('statusText').textContent = 'Payment confirmation taking longer than expected. Processing manually...';
+                        
+                        // If we have a payment ID, use it to update the status
+                        if (data.paymentId) {
+                            await updateSubscriptionStatus(docId, data.paymentId, customerInfo);
+                        } else {
+                            // No payment ID, just proceed with the subscription ID
+                            setTimeout(() => {
+                                // Redirect to final page anyway
+                                localStorage.removeItem('pendingSubscriptionId');
+                                
+                                // Create URL with params 
+                                let finalUrl = `Final.html?subscriptionId=${docId}`;
+                                
+                                // Add customer info if available
+                                if (customerInfo.email) finalUrl += `&email=${encodeURIComponent(customerInfo.email)}`;
+                                if (customerInfo.phone) finalUrl += `&phone=${encodeURIComponent(customerInfo.phone)}`;
+                                if (customerInfo.fullName) finalUrl += `&fullName=${encodeURIComponent(customerInfo.fullName)}`;
+                                
+                                // Add fallback flag
+                                finalUrl += '&updated_by=fallback';
+                                
+                                window.location.href = finalUrl;
+                            }, 2000);
+                        }
+                        return;
+                    }
+                    
+                    // Poll for status changes
+                    setTimeout(() => {
+                        checkSubscriptionStatus(docId, customerInfo);
+                    }, 5000); // Check every 5 seconds
+                }
+            } catch (error) {
+                console.error('Error checking subscription status:', error);
+                document.getElementById('statusText').innerHTML = 'Error checking payment status. <br><small>Error: ' + error.message + '</small>';
+            }
+        }
+    </script>
+</body>
+
+</html> 

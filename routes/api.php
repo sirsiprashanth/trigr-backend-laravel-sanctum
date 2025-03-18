@@ -19,6 +19,7 @@ use App\Http\Controllers\VitalScanController;
 use App\Http\Controllers\EplimoReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DubaiEventController;
+use App\Http\Controllers\RazorpayWebhookController;
 use Illuminate\Support\Facades\Mail;
 
 Route::get('/user', function (Request $request) {
@@ -94,6 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
 // Dubai Event Routes
 Route::post('/dubai-event-facescans', [DubaiEventController::class, 'logFaceScan']);
 Route::post('/dubai-event-facescans/update', [DubaiEventController::class, 'logUpdate']);
+
+// Razorpay Webhook Route
+Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handleWebhook']);
 
 Route::get('/test-mail', function () {
     try {

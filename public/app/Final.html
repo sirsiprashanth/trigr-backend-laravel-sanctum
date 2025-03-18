@@ -11,11 +11,50 @@
     <link rel="stylesheet" href="assets/css/Navbar-Centered-Links-icons.css">
     <link rel="stylesheet" href="assets/css/Pricing-Yearly--Monthly-badges.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Add Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
     <style>
         .navbar-toggler-icon {
-        filter: invert(1); /* This makes it white */
-    }
+            filter: invert(1); /* This makes it white */
+        }
+        
+        .transaction-box {
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid #333;
+            font-family: Unbounded, sans-serif;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        
+        .detail-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            color: white;
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        .transaction-title {
+            color: #6DB100;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
     </style>
     
 </head>
@@ -55,7 +94,7 @@
                     </ul><a class="btn btn-primary text-uppercase text-end px-4 py-2" role="button"
                         style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: var(--bs-success);"
                         onclick="openDownloadPopup()">
-                        Download now <i class="fas fa-arrow-down"></i>
+                        Download now <i class="fas fa-arrow-down"></i>
                     </a>
                 </div>
             </div>
@@ -67,11 +106,69 @@
         <h1 class="text-uppercase text-center" style="font-family: Unbounded;color: var(--bs-white);">Your PURCHASE HAS
             BEEN MADE!<br /></h1>
         <p class="text-center" style="font-family: Unbounded;color: var(--bs-white);">We are excited for you on
-            embarking on your fitness journey! We are here with you every step along the way.<br /></p><a
-            class="btn btn-primary text-uppercase text-end px-4 py-2 mt-5" role="button"
+            embarking on your fitness journey! We are here with you every step along the way.<br /></p>
+            
+        <!-- Transaction Details -->
+        <div class="transaction-box col-md-8 col-lg-6">
+            <h4 class="transaction-title">Transaction Details</h4>
+            
+            <!-- Status Update Notification -->
+            <div id="statusUpdateNotification" style="display: none; background-color: #6DB100; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                Your payment was successful! Transaction details have been updated.
+            </div>
+            
+            <!-- User Information Section -->
+            <div class="detail-row">
+                <div class="detail-label">Name</div>
+                <div class="detail-value" id="fullName">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Email</div>
+                <div class="detail-value" id="email">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Phone</div>
+                <div class="detail-value" id="phone">Loading...</div>
+            </div>
+            
+            <!-- Subscription Information Section -->
+            <div class="detail-row">
+                <div class="detail-label">Plan Type</div>
+                <div class="detail-value" id="planType">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Amount</div>
+                <div class="detail-value" id="amount">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Subscription ID</div>
+                <div class="detail-value" id="subscriptionId">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Subscription Date</div>
+                <div class="detail-value" id="createdDate">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Valid Until</div>
+                <div class="detail-value" id="endDate">Loading...</div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value" id="status">Loading...</div>
+            </div>
+        </div>
+            
+        <a class="btn btn-primary text-uppercase text-end px-4 py-2 mt-5" role="button"
             style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: var(--bs-success);"
             target="_blank" href="https://play.google.com/store/apps/details?id=com.trigr.vieroots&amp;hl=en">BACK TO
-            HOMESCREEN   <i class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
+            HOMESCREEN   <i class="fas fa-arrow-right" style="font-size: 12px;"></i></a>
     </div>
 </div>
 
@@ -99,6 +196,246 @@
         </div>
     </div>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCigZCPNGgr5-gF5a-P4uP-NYWb0usyVx4",
+            authDomain: "trigr-community.firebaseapp.com",
+            projectId: "trigr-community",
+            storageBucket: "trigr-community.appspot.com",
+            messagingSenderId: "1000776789412",
+            appId: "1:1000776789412:web:f91dfd8aad45ca1b9d6531",
+            measurementId: "G-1NM1K1CMJ5",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Format date as DD-MMM-YYYY
+        function formatDate(timestamp) {
+            if (!timestamp) return "N/A";
+            
+            try {
+                // Convert Firebase timestamp to JS Date
+                const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+                
+                // Format the date
+                const options = { day: '2-digit', month: 'short', year: 'numeric' };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                console.error("Error formatting date:", error);
+                return "N/A";
+            }
+        }
+        
+        // When the page loads, try to get subscription ID from URL and log all parameters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get subscription ID from URL query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            console.log("All URL parameters:", Object.fromEntries(urlParams.entries()));
+            
+            let subscriptionId = urlParams.get('subscriptionId');
+            const paymentId = urlParams.get('paymentId');
+            
+            // If not in URL, try localStorage
+            if (!subscriptionId) {
+                subscriptionId = localStorage.getItem('pendingSubscriptionId');
+                // Clear localStorage
+                localStorage.removeItem('pendingSubscriptionId');
+            }
+            
+            // If no subscription ID found anywhere, use a hardcoded one
+            if (!subscriptionId) {
+                // This is for demonstration/testing
+                fetchSubscription("mOBg3BfTXHQtN4KBfUP6");
+            } else {
+                fetchSubscriptionAndUpdate(subscriptionId, paymentId);
+            }
+        });
+        
+        // Fetch subscription details and update if needed
+        function fetchSubscriptionAndUpdate(docId, paymentId) {
+            console.log("Fetching subscription with ID:", docId);
+            
+            db.collection('subscriptionPlans').doc(docId).get()
+                .then(function(doc) {
+                    if (doc.exists) {
+                        // Log all data received from Firestore
+                        console.log("===== SUBSCRIPTION DATA FROM FIREBASE =====");
+                        console.log(doc.data());
+                        console.log("==========================================");
+                        
+                        const data = doc.data();
+                        
+                        // Check if subscription needs updating
+                        if (data.status === 'pending' || data.paymentStatus === 'pending') {
+                            console.log("Subscription is still pending. Updating to active since Final.html loaded.");
+                            
+                            // Get customer info from URL parameters
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const urlFullName = urlParams.get('fullName');
+                            const urlEmail = urlParams.get('email');
+                            const urlPhone = urlParams.get('phone');
+                            
+                            // Prepare update data
+                            const updateData = {
+                                status: 'active',
+                                paymentStatus: 'completed',
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                client_updated: true,
+                                client_timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+                            
+                            // Add payment ID if available
+                            if (paymentId) {
+                                updateData.paymentId = paymentId;
+                            }
+                            
+                            // Add customer info if available from URL params
+                            if (urlFullName) updateData.fullName = urlFullName;
+                            if (urlEmail) updateData.email = urlEmail;
+                            if (urlPhone) updateData.phone = urlPhone;
+                            
+                            // Update the document
+                            db.collection('subscriptionPlans').doc(docId).update(updateData)
+                                .then(function() {
+                                    console.log("Subscription successfully updated to active!");
+                                    // Show success notification
+                                    document.getElementById('statusUpdateNotification').style.display = 'block';
+                                    // Fetch the updated document and display it
+                                    fetchSubscription(docId);
+                                })
+                                .catch(function(error) {
+                                    console.error("Error updating subscription:", error);
+                                    // Display what we have even if update failed
+                                    displaySubscriptionDetails(data);
+                                });
+                        } else {
+                            // Already active, just display it
+                            displaySubscriptionDetails(data);
+                        }
+                    } else {
+                        // Document doesn't exist, show error
+                        console.error("No subscription found with ID:", docId);
+                        displayDefaultDetails();
+                    }
+                })
+                .catch(function(error) {
+                    console.error("Error getting subscription:", error);
+                    displayDefaultDetails();
+                });
+        }
+        
+        // Fetch subscription details from Firestore
+        function fetchSubscription(docId) {
+            console.log("Fetching subscription with ID:", docId);
+            
+            db.collection('subscriptionPlans').doc(docId).get()
+                .then(function(doc) {
+                    if (doc.exists) {
+                        // Log all data received from Firestore
+                        console.log("===== SUBSCRIPTION DATA FROM FIREBASE =====");
+                        console.log(doc.data());
+                        console.log("==========================================");
+                        
+                        displaySubscriptionDetails(doc.data());
+                    } else {
+                        // Document doesn't exist, show error
+                        console.error("No subscription found with ID:", docId);
+                        displayDefaultDetails();
+                    }
+                })
+                .catch(function(error) {
+                    console.error("Error getting subscription:", error);
+                    displayDefaultDetails();
+                });
+        }
+        
+        // Display subscription details in the UI
+        function displaySubscriptionDetails(data) {
+            // Check URL parameters for additional customer info to use as fallback
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlFullName = urlParams.get('fullName');
+            const urlEmail = urlParams.get('email');
+            const urlPhone = urlParams.get('phone');
+            
+            // Update UI elements with subscription data
+            document.getElementById('planType').innerText = data.planType || "trigr_plus";
+            document.getElementById('amount').innerText = "₹" + (data.amount || "649");
+            document.getElementById('subscriptionId').innerText = data.subscriptionId || "N/A";
+            document.getElementById('createdDate').innerText = formatDate(data.createdAt);
+            document.getElementById('endDate').innerText = formatDate(data.endDate);
+            
+            // Status handling - show success with a checkmark if active or completed
+            const statusElement = document.getElementById('status');
+            if (data.status === 'active' || data.paymentStatus === 'completed' || data.client_updated) {
+                statusElement.innerHTML = '<span style="color: #6DB100;">✓ Success</span>';
+            } else {
+                statusElement.innerText = data.status || "pending";
+            }
+            
+            // Add user details, with URL parameters as fallback
+            document.getElementById('fullName').innerText = data.fullName || urlFullName || "N/A";
+            document.getElementById('email').innerText = data.email || urlEmail || "N/A";
+            document.getElementById('phone').innerText = data.phone || urlPhone || "N/A";
+            
+            // If we used URL parameters as fallback and we have a valid subscription ID,
+            // update the database with this information for future reference
+            const subscriptionId = urlParams.get('subscriptionId');
+            if (subscriptionId && 
+                ((urlFullName && !data.fullName) || 
+                 (urlEmail && !data.email) || 
+                 (urlPhone && !data.phone))) {
+                
+                const updates = {};
+                if (urlFullName && !data.fullName) updates.fullName = urlFullName;
+                if (urlEmail && !data.email) updates.email = urlEmail;
+                if (urlPhone && !data.phone) updates.phone = urlPhone;
+                
+                console.log("Updating missing customer info in Firestore:", updates);
+                
+                db.collection('subscriptionPlans').doc(subscriptionId)
+                    .update(updates)
+                    .then(() => console.log("Customer info updated in Firestore"))
+                    .catch(err => console.error("Error updating customer info:", err));
+            }
+        }
+        
+        // Display default details if subscription can't be found
+        function displayDefaultDetails() {
+            // Check URL parameters for customer info
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlFullName = urlParams.get('fullName');
+            const urlEmail = urlParams.get('email');
+            const urlPhone = urlParams.get('phone');
+            
+            document.getElementById('planType').innerText = "trigr_plus";
+            document.getElementById('amount').innerText = "₹649";
+            document.getElementById('subscriptionId').innerText = "N/A";
+            
+            const today = new Date();
+            document.getElementById('createdDate').innerText = formatDate(today);
+            
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 1);
+            document.getElementById('endDate').innerText = formatDate(endDate);
+            
+            // Since we're on the success page, always show success status
+            document.getElementById('status').innerHTML = '<span style="color: #6DB100;">✓ Success</span>';
+            
+            // Default user details, using URL parameters if available
+            document.getElementById('fullName').innerText = urlFullName || "N/A";
+            document.getElementById('email').innerText = urlEmail || "N/A";
+            document.getElementById('phone').innerText = urlPhone || "N/A";
+            
+            // Show the update notification
+            document.getElementById('statusUpdateNotification').innerHTML = 
+                'Your payment was successful! However, we couldn\'t find your complete transaction details.';
+            document.getElementById('statusUpdateNotification').style.display = 'block';
+        }
+    </script>
 </body>
 
 </html>

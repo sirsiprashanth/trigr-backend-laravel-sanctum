@@ -5,12 +5,52 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>TrigrWireFrame</title>
+    <!-- Immediately hide Razorpay buttons -->
+    <style>
+        .razorpay-payment-button {
+            /* Make it off-screen but still accessible to JS */
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            /* Maintain visibility for click events */
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            /* Styling for proper rendering */
+            background-color: #6DB100;
+            color: white;
+            font-family: Unbounded, sans-serif;
+            width: 200px;
+            height: 50px;
+        }
+    </style>
+    <script>
+        // Simple Razorpay button handler
+        window.handleRazorpayButton = function() {
+            // Find all Razorpay buttons on the page
+            const buttons = document.querySelectorAll('.razorpay-payment-button');
+            if (buttons.length > 0) {
+                console.log('Found Razorpay button, clicking it');
+                // Click the first button found
+                buttons[0].click();
+                return true;
+            }
+            return false;
+        };
+    </script>
+    <link rel="icon" href="assets/img/Logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/Unbounded.css">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="assets/css/Navbar-Centered-Links-icons.css">
     <link rel="stylesheet" href="assets/css/Pricing-Yearly--Monthly-badges.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Add Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <!-- Razorpay JavaScript SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
   
         .fitness-form-wrapper {
@@ -57,7 +97,41 @@
         }
         .navbar-toggler-icon {
         filter: invert(1); /* This makes it white */
-    }
+        }
+        .error-message {
+            color: #ff6b6b;
+            font-family: Unbounded;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Razorpay Button Customization */
+        .razorpay-payment-button:hover {
+            background-color: #5a9400 !important;
+        }
+        
+        /* Hide Razorpay iframe that might appear */
+        iframe[src*="razorpay"] {
+            opacity: 1 !important; /* Keep iframe visible as it contains the payment form */
+        }
+
+        /* Razorpay button container styling */
+        .razorpay-button-container {
+            margin: 15px 0;
+        }
     </style>
 </head>
 
@@ -96,7 +170,7 @@
                     </ul><a class="btn btn-primary text-uppercase text-end px-4 py-2" role="button"
                         style="border-radius: 13px;font-family: Unbounded;font-size: 12px;background: var(--bs-black);border-color: var(--bs-success);"
                         onclick="openDownloadPopup()">
-                        Download now <i class="fas fa-arrow-down"></i>
+                        Download now <i class="fas fa-arrow-down"></i>
                     </a>
                 </div>
             </div>
@@ -106,21 +180,55 @@
         <div class="row px-5">
             <div class="col-md-6 d-flex flex-column justify-content-center">
                 <h1 class="fw-light text-uppercase" style="font-family: Unbounded;color: var(--bs-white);">THANK YOU <br>CHOOSING THE<br><span class="fw-semibold">TRIGR PLUS plan<br></span></h1>
-                <p class="mt-3" style="font-family: Unbounded;color: var(--bs-white);">We just need a few more details from you before you can continue your fitness journey with us!<br></p>
+                <p class="mt-3" style="font-family: Unbounded;color: var(--bs-white);">Click the button below to complete your subscription payment and start your fitness journey with us!<br></p>
 
-            <form class="mt-5">
-                <div class="fitness-input-group mt-2">
-                    <input type="text" class="fitness-input" placeholder="Enter Your Full Name" required>
+                <div class="mt-4">
+                    <!-- User Information Form -->
+                    <div id="userInfoForm" class="mb-4" style="max-width: 400px;">
+                        <div class="form-group mb-3">
+                            <label for="fullName" style="color: #fff; font-family: Unbounded; font-size: 14px; margin-bottom: 5px;">Your Name</label>
+                            <input type="text" id="fullName" class="fitness-input" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email" style="color: #fff; font-family: Unbounded; font-size: 14px; margin-bottom: 5px;">Email Address</label>
+                            <input type="email" id="email" class="fitness-input" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="phone" style="color: #fff; font-family: Unbounded; font-size: 14px; margin-bottom: 5px;">Phone Number</label>
+                            <input type="tel" id="phone" class="fitness-input" placeholder="Enter your phone number" required>
+                        </div>
+                        <div id="formError" style="color: #ff6b6b; margin-top: 10px; font-size: 14px; display: none;"></div>
+                        <button id="continueToPayment" class="fitness-btn" style="background-color: #6DB100; margin-top: 10px;">Continue to Payment</button>
+                        <!-- Loading indicator -->
+                        <div id="loadingIndicator" style="display: none; color: white; text-align: center; margin-top: 15px; font-family: Unbounded; font-size: 14px;">
+                            <div class="spinner-border text-light" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p style="margin-top: 10px;">Processing payment information...</p>
+                        </div>
+                    </div>
+
+                    <!-- Success Message and Payment Button (Hidden Initially) -->
+                    <div id="paymentSection" style="display: none; max-width: 400px; text-align: center; margin-top: 20px;">
+                        <div style="background-color: #1a1a1a; border-radius: 15px; padding: 25px; border: 1px solid #333;">
+                            <div style="color: #6DB100; font-size: 22px; margin-bottom: 15px; font-family: Unbounded;">✓ Details Saved Successfully!</div>
+                            <div style="color: white; font-size: 16px; margin-bottom: 25px; font-family: Unbounded;">
+                                Your information has been saved. Click the button below to complete your payment.
+                            </div>
+                            <div id="razorpayButtonContainer" class="razorpay-button-container">
+                                <!-- Razorpay button will be placed here -->
+                            </div>
+                            <button id="editDetails" class="fitness-btn" style="background-color: transparent; color: #aaa; border: 1px solid #555; margin-top: 15px; font-size: 14px;">Edit my details</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Original Razorpay Form (Hidden) -->
+                    <form id="razorpayForm" style="display: none; position: absolute; top: 0; left: 0; z-index: -1;">
+                        <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Q8D4A0EmI3P3Z7" async> </script>
+                    </form>
+                    
+                    <div id="debugInfo" style="color: #aaa; font-size: 11px; margin-top: 15px; font-family: monospace;"></div>
                 </div>
-                <div class="fitness-input-group mt-2">
-                    <input type="tel" class="fitness-input" placeholder="Enter Your Phone Number" required>
-                </div>
-                <div class="fitness-input-group mt-2">
-                    <input type="email" class="fitness-input" placeholder="Enter Your Email" required>
-                </div>
-               
-                <button type="submit" class="fitness-btn mt-4">CONTINUE T0 CHECKOUT&nbsp;<i class="fas fa-arrow-right"></i></button>
-            </form>
                 
             </div>
             <div class="col-md-6 my-3"><img class="img-fluid" src="assets/img/PricingCard2.png"></div>
@@ -150,6 +258,391 @@
         </div>
     </div>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCigZCPNGgr5-gF5a-P4uP-NYWb0usyVx4",
+            authDomain: "trigr-community.firebaseapp.com",
+            projectId: "trigr-community",
+            storageBucket: "trigr-community.appspot.com",
+            messagingSenderId: "1000776789412",
+            appId: "1:1000776789412:web:f91dfd8aad45ca1b9d6531",
+            measurementId: "G-1NM1K1CMJ5",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Generate a random subscription ID
+        function generateSubscriptionId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        
+        let subscriptionDocId = null; // Store the document ID globally
+        
+        // When the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up click handler for the Continue to Payment button
+            document.getElementById('continueToPayment').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                const fullName = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const errorElement = document.getElementById('formError');
+                
+                if (!fullName || !email || !phone) {
+                    errorElement.textContent = "Please fill in all fields before proceeding.";
+                    errorElement.style.display = "block";
+                    return;
+                }
+                
+                // Hide error if previously shown
+                errorElement.style.display = "none";
+                
+                // Show loading indicator
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                loadingIndicator.style.display = 'block';
+                
+                // Hide the continue button while processing
+                document.getElementById('continueToPayment').style.display = 'none';
+                
+                // Save customer data and automatically proceed to payment
+                createPendingSubscription()
+                    .then(() => {
+                        // Save the user info in localStorage as backup
+                        localStorage.setItem('user_fullName', fullName);
+                        localStorage.setItem('user_email', email);
+                        localStorage.setItem('user_phone', phone);
+                        
+                        // Hide loading indicator
+                        loadingIndicator.style.display = 'none';
+                        
+                        // Hide the form and show the payment section
+                        document.getElementById('userInfoForm').style.display = 'none';
+                        document.getElementById('paymentSection').style.display = 'block';
+                        
+                        // Show the Razorpay form (but keep it invisible)
+                        const razorpayForm = document.getElementById('razorpayForm');
+                        razorpayForm.style.display = 'block';
+                        
+                        // Wait for Razorpay button to be created by their script
+                        const checkForRazorpayButton = setInterval(() => {
+                            const razorpayButton = document.querySelector('.razorpay-payment-button');
+                            
+                            if (razorpayButton) {
+                                clearInterval(checkForRazorpayButton);
+                                
+                                // Clone the button to our container
+                                const clonedButton = razorpayButton.cloneNode(true);
+                                
+                                // Style the button nicely
+                                clonedButton.style.display = 'block';
+                                clonedButton.style.opacity = '1';
+                                clonedButton.style.visibility = 'visible';
+                                clonedButton.style.position = 'static';
+                                clonedButton.style.backgroundColor = '#6DB100';
+                                clonedButton.style.color = 'white';
+                                clonedButton.style.fontFamily = 'Unbounded, sans-serif';
+                                clonedButton.style.padding = '12px 20px';
+                                clonedButton.style.borderRadius = '30px';
+                                clonedButton.style.border = 'none';
+                                clonedButton.style.fontSize = '16px';
+                                clonedButton.style.width = '100%';
+                                clonedButton.style.maxWidth = '100%';
+                                clonedButton.style.cursor = 'pointer';
+                                clonedButton.style.textTransform = 'uppercase';
+                                
+                                // When the cloned button is clicked, trigger the original button
+                                clonedButton.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    razorpayButton.click();
+                                });
+                                
+                                // Add the button to our container
+                                document.getElementById('razorpayButtonContainer').innerHTML = '';
+                                document.getElementById('razorpayButtonContainer').appendChild(clonedButton);
+                                
+                                // Set up Razorpay prefill options
+                                window.addEventListener('message', function(e) {
+                                    if (e.data && e.data.type === 'razorpay_pre_open') {
+                                        // Get the Razorpay instance
+                                        const razorpay = window.Razorpay;
+                                        if (razorpay && razorpay.options) {
+                                            // Add our customer information
+                                            razorpay.options.prefill = {
+                                                name: fullName,
+                                                email: email,
+                                                contact: phone
+                                            };
+                                            
+                                            // Add subscription ID as a note
+                                            razorpay.options.notes = {
+                                                subscription_doc_id: subscriptionDocId,
+                                                full_name: fullName
+                                            };
+                                            
+                                            console.log('Razorpay options set with customer info and subscription ID');
+                                        }
+                                    }
+                                }, { once: true });
+                            }
+                        }, 500);
+                        
+                        // Add a timeout for the case where the button doesn't appear
+                        setTimeout(() => {
+                            clearInterval(checkForRazorpayButton);
+                            
+                            // If we reach this point and the payment button isn't showing, show an error
+                            if (document.getElementById('razorpayButtonContainer').innerHTML === '') {
+                                document.getElementById('razorpayButtonContainer').innerHTML = `
+                                    <p style="margin-top: 10px; color: white;">Payment gateway is taking longer than expected to load.</p>
+                                    <button onclick="window.location.reload()" class="fitness-btn" style="background-color: #6DB100; margin-top: 10px; width: auto; display: inline-block; padding: 8px 16px;">
+                                        Retry
+                                    </button>
+                                `;
+                            }
+                        }, 10000);
+                    })
+                    .catch(error => {
+                        // Hide loading indicator
+                        loadingIndicator.style.display = 'none';
+                        // Show the continue button again
+                        document.getElementById('continueToPayment').style.display = 'block';
+                        // Show error message
+                        errorElement.textContent = "Error saving your information: " + error.message;
+                        errorElement.style.display = "block";
+                    });
+            });
+            
+            // Setup edit details button
+            document.getElementById('editDetails').addEventListener('click', function() {
+                // Hide payment section and show form again
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('userInfoForm').style.display = 'block';
+                document.getElementById('continueToPayment').style.display = 'block';
+            });
+            
+            const debugInfo = document.getElementById('debugInfo');
+            // Only show debug info in local development
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                debugInfo.textContent = "Local development mode: Payment will be handled by Razorpay's hosted checkout page";
+                debugInfo.style.display = "block";
+            } else {
+                debugInfo.style.display = "none";
+            }
+        });
+        
+        // Setup Razorpay custom button with customer info
+        function setupRazorpayCustomButton(fullName, email, phone) {
+            document.getElementById('customRazorpayButton').addEventListener('click', function() {
+                // Show loading indicator when custom button is clicked
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('razorpayButtonContainer').style.display = 'none';
+                
+                // Show the original Razorpay button (but keep it visually hidden)
+                const razorpayForm = document.getElementById('razorpayForm');
+                razorpayForm.style.display = 'block';
+                razorpayForm.style.visibility = 'hidden'; // Ensure it remains invisible
+                razorpayForm.style.position = 'absolute';
+                razorpayForm.style.opacity = '0';
+                
+                // Find the automatically created button and click it
+                setTimeout(() => {
+                    const razorpayButton = razorpayForm.querySelector('.razorpay-payment-button');
+                    if (razorpayButton) {
+                        console.log('Clicking Razorpay button with subscription ID:', subscriptionDocId);
+                        
+                        // Set up Razorpay prefill options with customer data and subscription ID
+                        window.addEventListener('message', function(e) {
+                            if (e.data && e.data.type === 'razorpay_pre_open') {
+                                // Get the Razorpay instance
+                                const razorpay = window.Razorpay;
+                                if (razorpay && razorpay.options) {
+                                    // Hide loading indicator as Razorpay dialog is about to open
+                                    document.getElementById('loadingIndicator').style.display = 'none';
+                                    
+                                    // Add our customer information
+                                    razorpay.options.prefill = {
+                                        name: fullName,
+                                        email: email,
+                                        contact: phone
+                                    };
+                                    
+                                    // Add subscription ID as a note
+                                    razorpay.options.notes = {
+                                        subscription_doc_id: subscriptionDocId,
+                                        full_name: fullName
+                                    };
+                                    
+                                    console.log('Razorpay options set with customer info and subscription ID');
+                                }
+                            }
+                        }, { once: true });
+                        
+                        // Click the actual Razorpay button
+                        razorpayButton.click();
+                    } else {
+                        console.error('Razorpay button not found!');
+                        document.getElementById('loadingIndicator').innerHTML = `
+                            <p style="margin-top: 10px;">Payment system not responding. Please try again.</p>
+                            <button onclick="window.location.reload()" class="fitness-btn" style="background-color: #6DB100; margin-top: 10px; width: auto; display: inline-block; padding: 8px 16px;">
+                                Retry
+                            </button>
+                        `;
+                    }
+                }, 800); // Give the Razorpay button time to load
+            });
+        }
+        
+        // Create a pending subscription in Firestore
+        async function createPendingSubscription() {
+            try {
+                // Get user information from the form
+                const fullName = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                
+                // Generate a unique subscription ID
+                const subscriptionId = generateSubscriptionId();
+                
+                // Calculate start and end dates for subscription
+                const startDate = new Date();
+                const endDate = new Date();
+                endDate.setMonth(endDate.getMonth() + 1); // End date is one month from today
+                
+                // Create subscription data including user information
+                const subscriptionData = {
+                    subscriptionId: subscriptionId,
+                    planType: 'trigr_plus',
+                    amount: 649,
+                    startDate: startDate,
+                    endDate: endDate,
+                    createdAt: new Date(),
+                    status: 'pending',
+                    paymentStatus: 'pending',
+                    // Add user information 
+                    fullName: fullName,
+                    email: email,
+                    phone: phone,
+                    // Add creation timestamp for server-side fallback
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    clientTimestamp: new Date().toISOString()
+                };
+                
+                console.log('Creating pending subscription with user data:', subscriptionData);
+                
+                // Save to Firestore
+                const docRef = await db.collection('subscriptionPlans').add(subscriptionData);
+                subscriptionDocId = docRef.id;
+                
+                console.log('Pending subscription created with ID:', subscriptionDocId);
+                
+                // Store the document ID in localStorage so it can be retrieved after payment
+                localStorage.setItem('pendingSubscriptionId', subscriptionDocId);
+                localStorage.setItem('subscriptionCreatedAt', new Date().toISOString());
+                
+                // Set up a multi-tiered fallback mechanism to check status after delays
+                // This helps if the webhook fails to update the status
+                setupStatusCheckFallbacks(subscriptionDocId);
+                
+                return subscriptionDocId;
+                
+            } catch (error) {
+                console.error('Error creating pending subscription:', error);
+                if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                    document.getElementById('debugInfo').textContent = "Error creating pending subscription: " + error.message;
+                }
+                throw error;
+            }
+        }
+
+        // Set up a series of fallbacks to check the subscription status
+        function setupStatusCheckFallbacks(docId) {
+            // Check after 1 minute - first attempt
+            setTimeout(() => {
+                checkPendingSubscriptionStatus(docId, 1);
+            }, 60000); // 60 seconds
+            
+            // Check after 2 minutes - second attempt
+            setTimeout(() => {
+                checkPendingSubscriptionStatus(docId, 2);
+            }, 120000); // 120 seconds
+            
+            // Final check after 5 minutes
+            setTimeout(() => {
+                checkPendingSubscriptionStatus(docId, 3, true);
+            }, 300000); // 300 seconds
+        }
+
+        // Function to check if the subscription status was updated by the webhook
+        async function checkPendingSubscriptionStatus(docId, attemptNumber, isFinalAttempt = false) {
+            // Only run this check if we're still on this page
+            // If the user has been redirected, this shouldn't run
+            if (!document.hidden) {
+                try {
+                    console.log(`Checking subscription status (attempt ${attemptNumber})...`);
+                    const doc = await db.collection('subscriptionPlans').doc(docId).get();
+                    
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        // If payment status is still pending after the timeout,
+                        // and we have a pending subscription ID in localStorage,
+                        // it likely means the webhook didn't update it
+                        if (data.paymentStatus === 'pending' && localStorage.getItem('pendingSubscriptionId') === docId) {
+                            console.log(`Subscription status still pending after attempt ${attemptNumber}`);
+                            
+                            if (isFinalAttempt) {
+                                console.log('Final attempt: Redirecting to payment success page to verify status');
+                                redirectToPaymentSuccessPage(docId);
+                            } else {
+                                console.log(`Will check again in next attempt`);
+                            }
+                        } else if (data.paymentStatus === 'completed' || data.status === 'active') {
+                            // Status was successfully updated, redirect to success page
+                            console.log('Subscription was successfully updated to completed/active');
+                            redirectToPaymentSuccessPage(docId);
+                        }
+                    } else {
+                        console.error('Subscription document not found');
+                    }
+                } catch (error) {
+                    console.error(`Error checking subscription status (attempt ${attemptNumber}):`, error);
+                }
+            }
+        }
+
+        // Helper function to redirect to the payment success page
+        function redirectToPaymentSuccessPage(docId) {
+            // Get user information from the form or localStorage
+            const fullName = document.getElementById('fullName').value || localStorage.getItem('user_fullName') || '';
+            const email = document.getElementById('email').value || localStorage.getItem('user_email') || '';
+            const phone = document.getElementById('phone').value || localStorage.getItem('user_phone') || '';
+            
+            // Store user data temporarily in localStorage as backup
+            if (fullName) localStorage.setItem('user_fullName', fullName);
+            if (email) localStorage.setItem('user_email', email);
+            if (phone) localStorage.setItem('user_phone', phone);
+            
+            // Redirect to payment success page with user data in query parameters
+            let redirectUrl = 'payment-success.html?subscriptionId=' + encodeURIComponent(docId);
+            
+            // Add user details to URL if available
+            if (fullName) redirectUrl += '&fullName=' + encodeURIComponent(fullName);
+            if (email) redirectUrl += '&email=' + encodeURIComponent(email);
+            if (phone) redirectUrl += '&phone=' + encodeURIComponent(phone);
+            
+            // Add client-side fallback flag to indicate this was triggered by client fallback
+            redirectUrl += '&source=client_fallback';
+            
+            // Redirect to payment success page to check status
+            window.location.href = redirectUrl;
+        }
+    </script>
 </body>
 
 </html>
