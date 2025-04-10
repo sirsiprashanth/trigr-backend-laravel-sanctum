@@ -30,6 +30,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+// Password Reset Routes
+Route::post('password/email', [App\Http\Controllers\Api\PasswordResetController::class, 'sendResetLinkEmail']);
+Route::post('password/reset', [App\Http\Controllers\Api\PasswordResetController::class, 'reset']);
+
 Route::get('/get-coaches', [UserController::class, 'getCoaches'])->middleware('auth:sanctum');
 
 Route::apiResource('users', UserController::class);

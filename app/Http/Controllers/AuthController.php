@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
 
 class AuthController extends Controller
 {
@@ -25,6 +27,14 @@ class AuthController extends Controller
                 'password' => Hash::make($fields['password']),
                 'role' => $fields['role'],
             ]);
+
+            // Send welcome email to the new user
+            try {
+                Mail::to($user->email)->send(new WelcomeEmail($user));
+                Log::info('Welcome email sent to ' . $user->email);
+            } catch (\Exception $e) {
+                Log::error('Failed to send welcome email: ' . $e->getMessage());
+            }
 
             $token = $user->createToken($user->name);
 
