@@ -10,7 +10,8 @@ class EplimoReport extends Model
     protected $fillable = [
         'user_id',
         'report_data',
-        'pdf_path'
+        'pdf_path',
+        'recommendations_pdf_path'
     ];
 
     protected $casts = [

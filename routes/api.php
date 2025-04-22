@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/eplimo-report', [EplimoReportController::class, 'store']);
     Route::get('/eplimo-report', [EplimoReportController::class, 'show']);
     Route::get('/eplimo-report/download', [EplimoReportController::class, 'downloadPdf']);
+    Route::get('/eplimo-report/download-recommendations', [EplimoReportController::class, 'downloadRecommendationsPdf']);
 });
 
 // Notification Routes
