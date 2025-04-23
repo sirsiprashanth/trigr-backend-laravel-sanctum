@@ -14,8 +14,8 @@ class EplimoReportController extends Controller
     {
         $request->validate([
             'report_data' => 'required|json',
-            'pdf_report' => 'required|file|mimes:pdf|max:10240', // max 10MB
-            'recommendations_pdf' => 'sometimes|file|mimes:pdf|max:10240', // max 10MB
+            'pdf_report' => 'required|file|mimes:pdf|max:20480', // max 20MB
+            'recommendations_pdf' => 'sometimes|file|mimes:pdf|max:20480', // max 20MB
         ]);
 
         // Store PDF files
